@@ -3,6 +3,9 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include "database.h"
+#include "models.h"
+
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 
 int test_crypt(void);

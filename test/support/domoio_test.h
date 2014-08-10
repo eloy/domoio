@@ -3,8 +3,34 @@
 #include <gtest/gtest.h>
 #include "domoio.h"
 
+
+#define DOMOIO_ENV_TEST
+
 namespace domoio {
 
+
+  class TestEnvironment : public ::testing::Environment {
+  public:
+    virtual ~TestEnvironment() {}
+
+    virtual void SetUp() {
+      domoio::db::connect();
+    }
+
+
+    virtual void TearDown() {
+      domoio::db::close();
+    }
+  };
+
+
+
+  class DomoioTest  : public testing::Test {
+  protected:
+    virtual void SetUp() {
+
+    }
+  };
 
   class TestDevice {
   public:

@@ -1,6 +1,5 @@
 #include "domoio_test.h"
 
-
 TEST(Server, Listen_localhost) {
   domoio::start_server();
   boost::asio::io_service io_service;
