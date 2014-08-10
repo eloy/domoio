@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
