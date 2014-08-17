@@ -24,30 +24,4 @@ namespace domoio {
   }
 
 
-  boost::asio::io_service io_service;
-  bool run_server(void) {
-    try {
-      Server  server(io_service, 8013);
-      io_service.run();
-      // boost::asio::io_service::work work(io_service);
-    }
-    catch (std::exception& e) {
-      std::cerr << "Exception: " << e.what() << "\n";
-      return false;
-    }
-
-    return true;
-  }
-
-
-  bool start_server(void) {
-    boost::thread server_thread(run_server);
-    return true;
-  }
-
-
-  bool stop_server(void) {
-    io_service.stop();
-    return true;
-  }
 }

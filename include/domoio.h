@@ -1,20 +1,24 @@
+#ifndef DOMOIO_H
+#define DOMOIO_H
+
 #include <cstdlib>
 #include <iostream>
 #include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include <boost/tokenizer.hpp>
 #include "database.h"
 #include "models.h"
 
 #define CLIENT_BUFFER_MAX_LENGTH 1024
+#define SERVER_THREADS 1
 
 int test_crypt(void);
 
 
 namespace domoio {
   int run(void);
-
 
   /*
    * Domoio Server
@@ -27,12 +31,18 @@ namespace domoio {
     void start();
     bool send(std::string);
     void read();
+    bool logged_in();
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
 
     void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);
+
+    void dispatch_request();
+    void login();
+
+    Device *device;
   };
 
 
@@ -53,3 +63,7 @@ namespace domoio {
   bool stop_server(void);
 
 }
+
+
+
+#endif //DOMOIO_H

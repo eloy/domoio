@@ -6,8 +6,6 @@ namespace domoio {
 
   std::map<int, Device*> devices;
 
-
-
   void load_devices(void) {
     PGresult   *res;
     res = db::exec("select * from devices");
@@ -17,12 +15,14 @@ namespace domoio {
     int id_idx = PQfnumber(res, "id");
     int label_idx = PQfnumber(res, "label");
     int specs_idx = PQfnumber(res, "specifications");
+    int pass_idx = PQfnumber(res, "password");
 
     for(int i=0; i < rows; i++) {
       int id = atoi(PQgetvalue(res, i, id_idx));
       char *label = PQgetvalue(res, i, label_idx);
       char *specifications = PQgetvalue(res, i, specs_idx);
-      devices[id] = new Device(id, label, specifications);
+      char *password = PQgetvalue(res, i, pass_idx);
+      devices[id] = new Device(id, label, specifications, password);
     }
     PQclear(res);
 
@@ -33,6 +33,9 @@ namespace domoio {
 
   }
 
+  Device *device_find(int id) {
+    return devices[id];
+  }
 
   void free_devices(void) {
     for (std::map<int, Device*>::iterator it = devices.begin(); it != devices.end(); ++it) {
@@ -40,7 +43,8 @@ namespace domoio {
     }
   }
 
-  Device::Device(int id_, const char *label_, const char *specs) : id(id_), label(label_) {
+  Device::Device(int id_, const char *label_, const char *specs, const char *password_)
+    : id(id_), label(label_), password(password_) {
     this->parse_specifications(specs);
   }
 

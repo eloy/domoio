@@ -29,7 +29,11 @@ set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -
 
 # Add sources
 
-set(SRC ${SRC} ./src/server ./src/device_connection ./src/database)
+set(SRC ${SRC}
+  ./src/server
+  ./src/server_run
+  ./src/device_connection
+  ./src/database)
 set(SRC ${SRC} ./src/models/device ./src/models/port )
 # JS Engine
 set(SRC ${SRC} ./src/jsengine/engine)
@@ -51,7 +55,10 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 
 # Test Sources
 # Features
-set(TEST_SRC ${TEST_SRC} ./test/domoio_test ./test/features/server_test)
+set(TEST_SRC ${TEST_SRC} ./test/domoio_test
+  ./test/features/server_test
+  ./test/features/login_test
+)
 
 # Unit
 set(TEST_SRC ${TEST_SRC} ./test/unit/devices_test)

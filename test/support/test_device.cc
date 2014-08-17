@@ -20,6 +20,10 @@ namespace domoio {
     return true;
   }
 
+  bool TestDevice::close(void) {
+    socket.close();
+    return true;
+  }
 
   bool TestDevice::read(void) {
     try {
@@ -40,12 +44,17 @@ namespace domoio {
     return true;
   }
 
+  bool TestDevice::send(std::string msg) {
+    boost::asio::write(socket, boost::asio::buffer(msg.c_str(), msg.length() + 1));
+    return true;
+  }
+
   char *TestDevice::get_data(void) {
     return &this->data[0];
   }
 
   void TestDevice::assert_data_eq(const char* str) {
-    EXPECT_EQ(strcmp(this->data, str), 0);
+    ASSERT_STREQ(this->data, str);
   }
 
 }

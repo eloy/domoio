@@ -4,10 +4,6 @@
 #define keypair(type) std::pair<std::string, type>
 
 namespace domoio {
-  void load_devices(void);
-  void free_devices(void);
-
-
 
   class Port {
   public:
@@ -26,8 +22,11 @@ namespace domoio {
 
   class Device {
   public:
-    Device(int, const char*, const char*);
+    Device(int, const char*, const char*, const char*);
     ~Device(void);
+
+
+    bool password_matchs(std::string);
 
     int id;
     std::string label;
@@ -43,7 +42,15 @@ namespace domoio {
   private:
     void parse_specifications(const char *);
     std::map<std::string, Port*> ports;
+
+    std::string password;
   };
+
+  // Devices List
+  void load_devices(void);
+  void free_devices(void);
+  Device *device_find(int);
+
 }
 
 #endif //MODELS_H

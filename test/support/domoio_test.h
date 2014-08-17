@@ -36,7 +36,9 @@ namespace domoio {
   public:
     TestDevice(boost::asio::io_service&);
     bool connect(void);
+    bool close(void);
     bool read(void);
+    bool send(std::string);
     char* get_data(void);
     void assert_data_eq(const char*);
 

@@ -2,10 +2,8 @@
 
 
 int main(int argc, char* argv[]) {
+  // JS service
+  // domoio::run();
   domoio::db::connect();
-  domoio::run();
   domoio::run_server();
-  // while(true) {
-  //   sleep(1000);
-  // }
 }

@@ -8,6 +8,6 @@ TEST(Server, Listen_localhost) {
   device.connect();
   device.read();
   device.assert_data_eq("Hey, protocol=1.0\n");
-
+  device.close();
   domoio::stop_server();
 }

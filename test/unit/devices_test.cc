@@ -9,10 +9,10 @@ TEST(Devices, load_devices) {
 
 
 TEST(Devices, DeviceConstructor) {
-  domoio::Device device (1, "test device", SPECIFICATIONS);
+  domoio::Device device (1, "test device", SPECIFICATIONS, "foo");
   EXPECT_EQ(device.serial, "1234");
   EXPECT_EQ(device.ports_count(), 4);
 
   domoio::Port *port = device.port("dio03");
-  EXPECT_EQ(port->digital(), true);
+  EXPECT_TRUE(port->digital());
 }
