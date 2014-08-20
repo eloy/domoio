@@ -22,6 +22,11 @@ set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES})
 # Postgres
 set(DEP_LIBS ${DEP_LIBS} -lpq)
 
+# OpenSSL
+find_package(openssl)
+set(DEP_LIBS ${DEP_LIBS} ${OPENSSL_LIBRARIES})
+include_directories(${OPENSSL_INCLUDE_DIR})
+
 # BOOST
 include_directories(/Users/harlock/src/c/boost)
 set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread)
@@ -33,8 +38,16 @@ set(SRC ${SRC}
   ./src/server
   ./src/server_run
   ./src/device_connection
-  ./src/database)
-set(SRC ${SRC} ./src/models/device ./src/models/port )
+  ./src/database
+  ./src/crypto/aes
+)
+
+# Models
+set(SRC ${SRC}
+  ./src/models/device
+  ./src/models/port
+)
+
 # JS Engine
 set(SRC ${SRC} ./src/jsengine/engine)
 
@@ -61,7 +74,10 @@ set(TEST_SRC ${TEST_SRC} ./test/domoio_test
 )
 
 # Unit
-set(TEST_SRC ${TEST_SRC} ./test/unit/devices_test)
+set(TEST_SRC ${TEST_SRC}
+  ./test/unit/devices_test
+  ./test/unit/block_cypher_test
+)
 
 # Configure Google Test Lib
 IF(GTEST_PATH)
