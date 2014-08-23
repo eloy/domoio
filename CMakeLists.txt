@@ -20,10 +20,12 @@ set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES})
 
 
 # Postgres
-set(DEP_LIBS ${DEP_LIBS} -lpq)
+find_package(PostgreSQL)
+set(DEP_LIBS ${DEP_LIBS} ${PostgreSQL_LIBRARIES})
+include_directories(${PostgreSQL_INCLUDE_DIRS})
 
 # OpenSSL
-find_package(openssl)
+find_package(OpenSSL)
 set(DEP_LIBS ${DEP_LIBS} ${OPENSSL_LIBRARIES})
 include_directories(${OPENSSL_INCLUDE_DIR})
 
@@ -35,10 +37,12 @@ set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -
 # Add sources
 
 set(SRC ${SRC}
+  ./src/domoio
   ./src/server
   ./src/server_run
   ./src/device_connection
   ./src/database
+  ./src/crypto/crypto
   ./src/crypto/aes
 )
 
@@ -51,6 +55,7 @@ set(SRC ${SRC}
 # Commands
 set(SRC ${SRC}
   ./src/commands/cmd_exit
+  ./src/commands/cmd_create_session
 )
 
 
@@ -76,7 +81,7 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 # Features
 set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/server_test
-  ./test/features/login_test
+  ./test/features/create_session_test
 )
 
 # Unit
@@ -97,7 +102,10 @@ set(TEST_DEP_LIBS ${TEST_DEP_LIBS} -lgtest -lgtest_main)
 
 # Support code
 include_directories(./test/support)
-set(TEST_SRC ${TEST_SRC} ./test/support/test_device)
+set(TEST_SRC ${TEST_SRC}
+  ./test/support/test_device
+  ./test/support/factories
+)
 
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})
 target_link_libraries (test domoio_base ${DEP_LIBS} ${TEST_DEP_LIBS})

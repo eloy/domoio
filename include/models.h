@@ -38,12 +38,13 @@ namespace domoio {
     std::string serial;
     std::string manufacturer_id;
     std::string model;
+    std::string password;
 
   private:
     void parse_specifications(const char *);
     std::map<std::string, Port*> ports;
 
-    std::string password;
+
   };
 
   // Devices List

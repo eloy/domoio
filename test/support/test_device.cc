@@ -2,9 +2,6 @@
 
 
 namespace domoio {
-  TestDevice::TestDevice(boost::asio::io_service& _io_service) :
-    io_service(_io_service),  socket(_io_service) {
-  }
 
   bool TestDevice::connect(void) {
     try {
@@ -45,16 +42,40 @@ namespace domoio {
   }
 
   bool TestDevice::send(std::string msg) {
-    boost::asio::write(socket, boost::asio::buffer(msg.c_str(), msg.length() + 1));
+    if (this->session_started) {
+      this->send_crypted(msg.c_str(), msg.length());
+    } else {
+      this->send_raw(msg.c_str(), msg.length());
+    }
     return true;
   }
+
+  bool TestDevice::send_raw(const char *str, int length) {
+    boost::asio::write(socket, boost::asio::buffer(str, length + 1));
+    return true;
+  }
+
+  bool TestDevice::send_crypted(const char *str, int length) {
+    this->send_raw(str, length);
+    return true;
+  }
+
 
   char *TestDevice::get_data(void) {
     return &this->data[0];
   }
 
+  bool TestDevice::start_session(const char *str) {
+    this->block_cipher = new domoio::crypto::BlockCypher(this->password);
+    // Override current IV with the one in str
+    int iv_hex_length = AES_IV_LENGTH * 3;
+    domoio::crypto::hex_decode(&this->block_cipher->salt[0], str, iv_hex_length);
+    this->session_started = true;
+    return true;
+  }
+
   void TestDevice::assert_data_eq(const char* str) {
-    ASSERT_STREQ(this->data, str);
+    ASSERT_STREQ(str, this->data);
   }
 
 }

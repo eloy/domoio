@@ -3,6 +3,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
+#include <time.h>
 #include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -19,7 +21,11 @@ int test_crypt(void);
 
 
 namespace domoio {
+
   int run(void);
+
+
+  void init_domoio(void);
 
   /*
    * Domoio Server
@@ -27,6 +33,7 @@ namespace domoio {
 
   class DeviceConnection {
   public:
+    ~DeviceConnection();
     DeviceConnection(boost::asio::io_service&);
     boost::asio::ip::tcp::socket& get_socket(void);
     void start();
@@ -34,6 +41,7 @@ namespace domoio {
     void read();
     bool logged_in();
     bool close();
+    bool create_session(int);
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
@@ -45,6 +53,8 @@ namespace domoio {
     void login();
 
     Device *device;
+    domoio::crypto::BlockCypher *block_cipher;
+    int session_started;
   };
 
 
@@ -74,6 +84,7 @@ namespace domoio {
   typedef void (*CommandCallback)(DeviceConnection*, CommandParams);
 
   int register_server_command(std::string, CommandCallback);
+
 }
 
 

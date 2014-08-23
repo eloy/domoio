@@ -6,9 +6,6 @@ namespace domoio {
       conn->close();
     }
 
-
-
-    int plugin_id = domoio::register_server_command("exit", &exit);
-
+    int cmd_exit_id = domoio::register_server_command("exit", &exit);
   }
 }
