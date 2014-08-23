@@ -33,6 +33,7 @@ namespace domoio {
     bool send(std::string);
     void read();
     bool logged_in();
+    bool close();
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
@@ -63,6 +64,16 @@ namespace domoio {
   bool start_server(void);
   bool stop_server(void);
 
+
+
+
+  /*
+   * Commands
+   */
+  typedef std::vector<std::string>* CommandParams;
+  typedef void (*CommandCallback)(DeviceConnection*, CommandParams);
+
+  int register_server_command(std::string, CommandCallback);
 }
 
 

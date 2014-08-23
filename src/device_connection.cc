@@ -39,6 +39,11 @@ namespace domoio {
   }
 
 
+  bool DeviceConnection::close() {
+    this->socket.close();
+    return true;
+  }
+
   // Flags
   //--------------------------------------------------------------------
 
@@ -92,12 +97,38 @@ namespace domoio {
     }
   }
 
-  void DeviceConnection::dispatch_request() {
-    if (this->logged_in()) {
+  std::map<std::string, CommandCallback> server_commands;
+  int register_server_command(std::string name, CommandCallback command) {
+    return 1;
+  }
 
-    } else {
-      this->login();
+  void DeviceConnection::dispatch_request() {
+    // if (this->logged_in()) {
+
+    // } else {
+    //   this->login();
+    // }
+
+    std::string str(this->data);
+    boost::tokenizer<> tok(str);
+    std::vector<std::string> params;
+
+    for(boost::tokenizer<>::iterator beg=tok.begin(); beg!=tok.end();++beg){
+      params.push_back(*beg);
     }
+
+    if (params.size() == 0) {
+      this->send("400 Bad Request");
+      return;
+    }
+
+    CommandCallback callback = server_commands[params[0]];
+    if (callback == NULL) {
+      this->send("400 Bad Request");
+      return;
+    }
+
+    callback(this, &params);
   }
 
 }

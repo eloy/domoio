@@ -48,6 +48,12 @@ set(SRC ${SRC}
   ./src/models/port
 )
 
+# Commands
+set(SRC ${SRC}
+  ./src/commands/cmd_exit
+)
+
+
 # JS Engine
 set(SRC ${SRC} ./src/jsengine/engine)
 
