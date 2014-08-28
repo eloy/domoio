@@ -10,14 +10,17 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
+#include "exceptions.h"
 #include "database.h"
 #include "models.h"
 #include "crypt.h"
-
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 #define SERVER_THREADS 1
 
+#define LOG std::cout
+
 int test_crypt(void);
+
 
 
 namespace domoio {
@@ -39,7 +42,9 @@ namespace domoio {
     void start();
     bool send(std::string);
     void read();
-    bool logged_in();
+    bool login(const char *);
+    bool is_logged_in();
+    bool is_session_started();
     bool close();
     bool create_session(int);
   private:
@@ -47,14 +52,16 @@ namespace domoio {
     char data[CLIENT_BUFFER_MAX_LENGTH];
 
     void handle_read(const boost::system::error_code&, size_t );
+    bool send_raw(const char*, int);
+    bool send_crypted(const char*, int);
     void handle_write(const boost::system::error_code&);
 
-    void dispatch_request();
-    void login();
+    void dispatch_request(std::string);
 
     Device *device;
     domoio::crypto::BlockCypher *block_cipher;
-    int session_started;
+    bool session_started;
+    bool logged_in;
   };
 
 

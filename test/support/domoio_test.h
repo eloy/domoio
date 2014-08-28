@@ -35,10 +35,14 @@ namespace domoio {
   class TestDevice {
   public:
     TestDevice(boost::asio::io_service &_io_service) :
-    io_service(_io_service),  socket(_io_service) {}
+    io_service(_io_service),  socket(_io_service) {
+      this->session_started = false;
+    }
 
     TestDevice(boost::asio::io_service& _io_service, int _id, const char* _password) :
-    io_service(_io_service),  socket(_io_service), id(_id), password(_password) {}
+    io_service(_io_service),  socket(_io_service), id(_id), password(_password) {
+      this->session_started = false;
+    }
 
     bool connect(void);
     bool close(void);
@@ -48,14 +52,13 @@ namespace domoio {
     bool start_session(const char*);
     void assert_data_eq(const char*);
 
-  private:
     int id;
     const char *password;
     boost::asio::io_service& io_service;
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
     domoio::crypto::BlockCypher *block_cipher;
-    int session_started;
+    bool session_started;
 
     bool send_raw(const char *, int);
     bool send_crypted(const char *, int);

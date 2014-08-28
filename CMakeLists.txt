@@ -56,6 +56,7 @@ set(SRC ${SRC}
 set(SRC ${SRC}
   ./src/commands/cmd_exit
   ./src/commands/cmd_create_session
+  ./src/commands/cmd_login
 )
 
 

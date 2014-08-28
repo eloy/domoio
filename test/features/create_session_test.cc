@@ -14,8 +14,9 @@ TEST(CreateSession, invalid_device) {
   domoio::stop_server();
 }
 
+
 TEST(CreateSession, valid_device) {
-  const char *password = "0123456789abcdef";
+  const char *password = "012345678";
   domoio::Device *m_device = domoio::factory_device(1, "foo", password);
 
 
@@ -29,6 +30,9 @@ TEST(CreateSession, valid_device) {
   device.send("create_session 1");
   device.read();
   device.start_session(device.get_data());
-
+  device.send("login 1234");
+  device.read();
+  device.assert_data_eq("200 WELCOME");
+  device.close();
   domoio::stop_server();
 }

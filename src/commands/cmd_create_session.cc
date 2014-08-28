@@ -1,5 +1,4 @@
 #include "domoio.h"
-#include "support.h"
 
 namespace domoio {
   namespace commands {

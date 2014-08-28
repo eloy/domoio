@@ -14,23 +14,24 @@ namespace domoio {
 
 
     // HEX encode / decode
-    char *hex_encode(char *, const unsigned char*, int);
-    unsigned char *hex_decode(unsigned char *, const char*, int);
+    char *hex_encode(const unsigned char*, int*);
+    unsigned char *hex_decode(const char*, int*);
 
     class BlockCypher {
     public:
       BlockCypher(std::string);
+      BlockCypher(std::string, const unsigned char*);
       ~BlockCypher();
 
-      uint8_t salt[AES_IV_LENGTH];
-
-      int encrypt(std::string, unsigned char *);
-      int decrypt(unsigned char*, int, unsigned char*);
+      const unsigned char* get_iv(void) { return &this->salt[0]; }
+      unsigned char *encrypt(const char*, int*);
+      char *decrypt(const unsigned char*, int*);
 
       std::string session_string(void);
 
     private:
       EVP_CIPHER_CTX encrypt_ctx, decrypt_ctx;
+      uint8_t salt[AES_IV_LENGTH];
     };
 
   }

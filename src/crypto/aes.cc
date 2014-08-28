@@ -24,12 +24,6 @@ namespace domoio {
         return -1;
       }
 
-      // for(int x = 0; x<32; ++x)
-      //   printf("Key: %x iv: %x \n", key[x], iv[x]);
-
-      // for(int x = 0; x<8; ++x)
-      //   printf("salt: %x\n", salt[x]);
-
       EVP_CIPHER_CTX_init(e_ctx);
       EVP_EncryptInit_ex(e_ctx, EVP_aes_128_cbc(), NULL, key, iv);
 
@@ -40,28 +34,25 @@ namespace domoio {
     }
 
 
-    int aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int len, unsigned char *ciphertext)
+    int aes_encrypt(EVP_CIPHER_CTX *e, const unsigned char *plaintext, int len, unsigned char *ciphertext)
     {
       /* max ciphertext len for a n bytes of plaintext is n + AES_BLOCK_SIZE -1 bytes */
       int c_len = len + AES_BLOCK_SIZE - 1, f_len = 0;
 
       /* allows reusing of 'e' for multiple encryption cycles */
       if(!EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL)){
-        printf("ERROR in EVP_EncryptInit_ex \n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_EncryptInit_ex \n");
       }
 
       /* update ciphertext, c_len is filled with the length of ciphertext generated,
        *len is the size of plaintext in bytes */
       if(!EVP_EncryptUpdate(e, ciphertext, &c_len, plaintext, len)){
-        printf("ERROR in EVP_EncryptUpdate \n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_EncryptUpdate \n");
       }
 
       /* update ciphertext with the final remaining bytes */
       if(!EVP_EncryptFinal_ex(e, ciphertext+c_len, &f_len)){
-        printf("ERROR in EVP_EncryptFinal_ex \n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_EncryptFinal_ex \n");
       }
 
       return c_len + f_len;
@@ -71,24 +62,21 @@ namespace domoio {
     /*
      * Decrypt *len bytes of ciphertext
      */
-    int aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int len, unsigned char *plaintext)
+    int aes_decrypt(EVP_CIPHER_CTX *e, const unsigned char *ciphertext, int len, unsigned char *plaintext)
     {
       /* plaintext will always be equal to or lesser than length of ciphertext*/
       int p_len = len, f_len = 0;
 
       if(!EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL)){
-        printf("ERROR in EVP_DecryptInit_ex \n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_DecryptInit_ex \n");
       }
 
       if(!EVP_DecryptUpdate(e, plaintext, &p_len, ciphertext, len)){
-        printf("ERROR in EVP_DecryptUpdate\n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_DecryptUpdate\n");
       }
 
       if(!EVP_DecryptFinal_ex(e, plaintext+p_len, &f_len)){
-        printf("ERROR in EVP_DecryptFinal_ex\n");
-        return -1;
+        throw new DomoioException("ERROR in EVP_DecryptFinal_ex\n");
       }
 
       return p_len + f_len;;
@@ -105,26 +93,46 @@ namespace domoio {
       }
     }
 
+
+    BlockCypher::BlockCypher(std::string password, const unsigned char *iv) {
+      // Initialize IV
+      memcpy(&this->salt[0], iv, AES_IV_LENGTH);
+
+      if (aes_init((unsigned char *)password.c_str(), password.size(), this->salt, &this->encrypt_ctx, &this->decrypt_ctx)) {
+        printf("Couldn't initialize AES cipher\n");
+        return ;
+      }
+    }
+
     BlockCypher::~BlockCypher() {
       EVP_CIPHER_CTX_cleanup(&decrypt_ctx);
       EVP_CIPHER_CTX_cleanup(&encrypt_ctx);
     }
 
 
-    int BlockCypher::encrypt(std::string cleantext, unsigned char *encrypted) {
-      int length = cleantext.size() + 1;
-      int buffer_size = length + AES_BLOCK_SIZE - 1;
-      return aes_encrypt(&this->encrypt_ctx, (unsigned char *) cleantext.c_str(), length, encrypted);
+    unsigned char *BlockCypher::encrypt(const char* cleantext, int *length) {
+      *length = *length + 1;
+      int buffer_size = *length + AES_BLOCK_SIZE - 1;
+      unsigned char* encrypted = (unsigned char*) malloc((sizeof(unsigned char) * buffer_size));
+      memset(encrypted, 0, buffer_size);
+
+      *length = aes_encrypt(&this->encrypt_ctx, (unsigned char *) cleantext, *length, encrypted);
+
+      return encrypted;
     }
 
-    int BlockCypher::decrypt(unsigned char* ciphertext, int length, unsigned char* cleantext) {
-      return aes_decrypt(&this->decrypt_ctx, ciphertext, length, cleantext);
+    char *BlockCypher::decrypt(const unsigned char* ciphertext, int *length ) {
+      char *cleantext = (char *)malloc(sizeof(char)**length);
+      memset(cleantext, 0, *length);
+      *length = aes_decrypt(&this->decrypt_ctx, ciphertext, *length, (unsigned char *)cleantext);
+      return cleantext;
     }
 
     std::string BlockCypher::session_string(void) {
-      int iv_hex_length = AES_IV_LENGTH * 3 + 1;
-      char iv_str[iv_hex_length];
-      domoio::crypto::hex_encode(&iv_str[0], this->salt, AES_IV_LENGTH);
+      int length = AES_IV_LENGTH;
+      char *iv_str;
+
+      iv_str = domoio::crypto::hex_encode(this->salt, &length);
 
       std::stringstream buffer;
       time_t current_time;
@@ -132,6 +140,8 @@ namespace domoio {
 
       buffer << iv_str;
       buffer << current_time;
+
+      free(iv_str);
       return buffer.str();
     }
 

@@ -18,39 +18,46 @@ namespace domoio {
 
 
 
-    // HEX encode
+    // HEX encode / Decode
+    //----------------------------------------------------------------
 
-    char *hex_encode(char *buffer, const unsigned char* input, int length) {
-      int req_length = (length * 3) + 1;
+    // Hex encode
+    char *hex_encode(const unsigned char* input, int *length) {
+      int req_length = (*length * 3) + 1;
 
-      // if (buffer == 0) {
-      //   buffer = (char*) malloc(sizeof(char) * req_length);
-      // }
+      char *buffer = (char*) malloc(sizeof(char) * req_length);
+      if (buffer == NULL) {
+        throw "Can't allocate memory";
+      }
 
       memset(buffer, 0, req_length);
 
-      for(int i=0; i < length; i++) {
+      for(int i=0; i < *length; i++) {
         sprintf(&buffer[i * 3], "%02x ", input[i]);
       }
 
+      *length = req_length;
       return buffer;
     }
 
-    unsigned char *hex_decode(unsigned char *buffer, const char* input, int length) {
-      // int req_length = (length -1 ) / 3;
+    // Hex decode
+    unsigned char *hex_decode(const char* input, int *length) {
+      int req_length = (*length -1 ) / 3;
+      unsigned char *buffer = (unsigned char*) malloc(sizeof(unsigned char) * req_length);
 
-      // if (buffer == 0) {
-      //   buffer = (unsigned char*) malloc(sizeof(unsigned char) * req_length);
-      // }
+      if (buffer == NULL) {
+        throw "Can't allocate memory";
+      }
 
       // Create a temporal buffer becouse we are going to overwrite the buffer each loop
-      char *tmp = (char*) malloc(sizeof(char) * length);
-      strncpy(tmp, input, length);
+      char *tmp = (char*) malloc(sizeof(char) * *length);
+      strncpy(tmp, input, *length);
 
-      for (int i=0; i < length && *tmp; i++) {
+      for (int i=0; i < req_length; i++) {
         buffer[i] = strtol(tmp, &tmp, 16);
       }
 
+      *length = req_length;
       return buffer;
     }
 

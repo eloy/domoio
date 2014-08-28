@@ -27,7 +27,17 @@ namespace domoio {
       memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
       boost::system::error_code error;
 
-      size_t len = socket.read_some(boost::asio::buffer(data, CLIENT_BUFFER_MAX_LENGTH), error);
+      size_t bytes_transferred = socket.read_some(boost::asio::buffer(data, CLIENT_BUFFER_MAX_LENGTH), error);
+
+      if (this->session_started) {
+        int len =  bytes_transferred;
+        unsigned char *crypted = domoio::crypto::hex_decode(this->data, &len);
+        char * clean = this->block_cipher->decrypt(crypted, &len);
+        memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
+        memcpy(data, clean, len);
+        free(crypted);
+        free(clean);
+      }
 
       if (error == boost::asio::error::eof)
         return false;
@@ -56,7 +66,11 @@ namespace domoio {
   }
 
   bool TestDevice::send_crypted(const char *str, int length) {
-    this->send_raw(str, length);
+    unsigned char * enc = this->block_cipher->encrypt(str, &length);
+    char *hex = domoio::crypto::hex_encode(enc, &length);
+    this->send_raw(hex, length);
+    free(enc);
+    free(hex);
     return true;
   }
 
@@ -66,11 +80,13 @@ namespace domoio {
   }
 
   bool TestDevice::start_session(const char *str) {
-    this->block_cipher = new domoio::crypto::BlockCypher(this->password);
     // Override current IV with the one in str
-    int iv_hex_length = AES_IV_LENGTH * 3;
-    domoio::crypto::hex_decode(&this->block_cipher->salt[0], str, iv_hex_length);
+    int length = (AES_IV_LENGTH * 3) + 1;
+
+    unsigned char *iv = domoio::crypto::hex_decode(str, &length);
+    this->block_cipher = new domoio::crypto::BlockCypher(this->password, iv);
     this->session_started = true;
+    free(iv);
     return true;
   }
 
