@@ -43,6 +43,7 @@ set(SRC ${SRC}
   ./src/device_connection
   ./src/database
   ./src/crypto/crypto
+  ./src/crypto/block_cipher
   ./src/crypto/aes
 )
 

@@ -1,13 +1,13 @@
 #include "domoio_test.h"
 
-TEST(BlockCypher, encrypt) {
+TEST(BlockCipher, encrypt) {
   unsigned char *encrypted;
   char *decrypted;
 
   const char * plaintext = "ola ke ase, estudia o ke ase";
   int length = strlen(plaintext);
 
-  domoio::crypto::BlockCypher bc("12345678");
+  domoio::crypto::BlockCipher bc("12345678");
   encrypted = bc.encrypt(plaintext, &length);
 
   decrypted = bc.decrypt(encrypted, &length);
@@ -38,15 +38,15 @@ TEST(HexDecoder, encode_and_decode) {
   free(decoded);
 }
 
-TEST(BlockCypher, encrypt_and_encode) {
+TEST(BlockCipher, encrypt_and_encode) {
   unsigned char *encrypted;
   char *decrypted;
 
   const char * plaintext = "login 1234";
   int length = strlen(plaintext);
 
-  domoio::crypto::BlockCypher bc_1("0123456789abcdef");
-  domoio::crypto::BlockCypher bc_2("0123456789abcdef", bc_1.get_iv());
+  domoio::crypto::BlockCipher bc_1("0123456789abcdef");
+  domoio::crypto::BlockCipher bc_2("0123456789abcdef", bc_1.get_iv());
 
   encrypted = bc_1.encrypt(plaintext, &length);
 

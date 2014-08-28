@@ -84,7 +84,7 @@ namespace domoio {
     int length = (AES_IV_LENGTH * 3) + 1;
 
     unsigned char *iv = domoio::crypto::hex_decode(str, &length);
-    this->block_cipher = new domoio::crypto::BlockCypher(this->password, iv);
+    this->block_cipher = new domoio::crypto::BlockCipher(this->password, iv);
     this->session_started = true;
     free(iv);
     return true;

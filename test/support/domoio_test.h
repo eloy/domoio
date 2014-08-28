@@ -57,7 +57,7 @@ namespace domoio {
     boost::asio::io_service& io_service;
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
-    domoio::crypto::BlockCypher *block_cipher;
+    domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
 
     bool send_raw(const char *, int);

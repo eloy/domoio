@@ -59,7 +59,7 @@ namespace domoio {
     void dispatch_request(std::string);
 
     Device *device;
-    domoio::crypto::BlockCypher *block_cipher;
+    domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;
   };

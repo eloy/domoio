@@ -170,7 +170,7 @@ namespace domoio {
     }
 
     // Create Block Cipher
-    this->block_cipher = new domoio::crypto::BlockCypher(this->device->password);
+    this->block_cipher = new domoio::crypto::BlockCipher(this->device->password);
     this->send(this->block_cipher->session_string().c_str());
     this->session_started = true;
     return true;

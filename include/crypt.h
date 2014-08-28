@@ -17,13 +17,20 @@ namespace domoio {
     char *hex_encode(const unsigned char*, int*);
     unsigned char *hex_decode(const char*, int*);
 
-    class BlockCypher {
-    public:
-      BlockCypher(std::string);
-      BlockCypher(std::string, const unsigned char*);
-      ~BlockCypher();
 
-      const unsigned char* get_iv(void) { return &this->salt[0]; }
+    // AES
+    int aes_init(unsigned char*, int, unsigned char *, EVP_CIPHER_CTX *, EVP_CIPHER_CTX*);
+    int aes_encrypt(EVP_CIPHER_CTX*, const unsigned char*, int, unsigned char*);
+    int aes_decrypt(EVP_CIPHER_CTX*, const unsigned char*, int, unsigned char*);
+
+    // Block Cipher
+    class BlockCipher {
+    public:
+      BlockCipher(std::string);
+      BlockCipher(std::string, const unsigned char*);
+      ~BlockCipher();
+
+      const unsigned char* get_iv(void) { return &this->iv[0]; }
       unsigned char *encrypt(const char*, int*);
       char *decrypt(const unsigned char*, int*);
 
@@ -31,7 +38,7 @@ namespace domoio {
 
     private:
       EVP_CIPHER_CTX encrypt_ctx, decrypt_ctx;
-      uint8_t salt[AES_IV_LENGTH];
+      uint8_t iv[AES_IV_LENGTH];
     };
 
   }
