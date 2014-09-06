@@ -31,13 +31,13 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 # BOOST
 include_directories(/Users/harlock/src/c/boost)
-set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread)
-
+set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options)
 
 # Add sources
 
 set(SRC ${SRC}
   ./src/domoio
+  ./src/options
   ./src/server
   ./src/server_run
   ./src/device_connection
