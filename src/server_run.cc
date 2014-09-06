@@ -9,7 +9,8 @@ namespace domoio {
 
   bool run_server(void) {
     try {
-      Server server(io_service, 8013);
+      LOG << "Starting server in port " << conf_opt::port << "\n";
+      Server server(io_service, conf_opt::port);
       boost::asio::io_service::work work(io_service);
       io_service.run();
       // // Start servers
@@ -29,7 +30,7 @@ namespace domoio {
   bool start_server(void) {
     try {
       if (server == 0) {
-        server = new Server(io_service, 8013);
+        server = new Server(io_service, conf_opt::port);
         boost::asio::io_service::work work(io_service);
       }
       else {

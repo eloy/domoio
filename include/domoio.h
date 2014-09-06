@@ -1,6 +1,5 @@
 #ifndef DOMOIO_H
 #define DOMOIO_H
-
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -10,13 +9,13 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
+#include "config.h"
 #include "exceptions.h"
 #include "database.h"
 #include "models.h"
 #include "crypt.h"
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 #define SERVER_THREADS 1
-
 #define LOG std::cout
 
 int test_crypt(void);
@@ -24,6 +23,7 @@ int test_crypt(void);
 
 
 namespace domoio {
+
 
   int run(void);
 
