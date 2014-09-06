@@ -16,6 +16,7 @@ namespace domoio {
 
   void Server::handle_accept(DeviceConnection* device_connection, const boost::system::error_code& error) {
     if (!error) {
+      LOG << "Connection Started\n";
       device_connection->start();
     } else {
       delete device_connection;

@@ -95,7 +95,8 @@ namespace domoio {
           free(clean);
         }
         catch (std::exception& e) {
-          LOG << e.what();
+          LOG << "Error decoding input: " << e.what() << "\n";
+          this->session_started = false;
           this->send("400 Bad Request");
           this->close();
         }
