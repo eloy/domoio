@@ -11,6 +11,8 @@ namespace domoio {
     try {
       LOG << "Starting server in port " << conf_opt::port << "\n";
       Server server(io_service, conf_opt::port);
+      ControlServer control_server(io_service, conf_opt::socket);
+
       boost::asio::io_service::work work(io_service);
       io_service.run();
       // // Start servers
@@ -27,10 +29,13 @@ namespace domoio {
   }
 
   Server *server = 0;
+  ControlServer *control_server = 0;
+
   bool start_server(void) {
     try {
       if (server == 0) {
         server = new Server(io_service, conf_opt::port);
+        control_server = new ControlServer(io_service, conf_opt::socket);
         boost::asio::io_service::work work(io_service);
       }
       else {

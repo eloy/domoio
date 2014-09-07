@@ -2,7 +2,7 @@
 
 namespace domoio {
   namespace commands {
-    static void exit(DeviceConnection *conn, CommandParams params) {
+    static void exit(Connection *conn, CommandParams params) {
       conn->close();
     }
 

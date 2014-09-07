@@ -3,7 +3,7 @@
 namespace domoio {
   namespace commands {
 
-    static void login(DeviceConnection *conn, CommandParams params) {
+    static void login(Connection *conn, CommandParams params) {
       if (conn->login(params->at(1).c_str())) {
         conn->send("200 WELCOME");
       } else {

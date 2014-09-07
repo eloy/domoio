@@ -38,9 +38,12 @@ set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -
 set(SRC ${SRC}
   ./src/domoio
   ./src/options
+  ./src/control_server
   ./src/server
   ./src/server_run
+  ./src/connection
   ./src/device_connection
+  ./src/control_connection
   ./src/database
   ./src/crypto/crypto
   ./src/crypto/block_cipher
