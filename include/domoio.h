@@ -30,7 +30,7 @@ namespace domoio {
 
 
   void init_domoio(void);
-
+  void exit_domoio(void);
   /*
    * Domoio Server
    */
@@ -70,15 +70,16 @@ namespace domoio {
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
 
-    void handle_read(const boost::system::error_code&, size_t );
-    bool send_raw(const char*, int);
-    bool send_crypted(const char*, int);
-    void handle_write(const boost::system::error_code&);
-
     Device *device;
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;
+    bool disconnected;
+
+    void handle_read(const boost::system::error_code&, size_t );
+    bool send_raw(const char*, int);
+    bool send_crypted(const char*, int);
+    void handle_write(const boost::system::error_code&);
   };
 
 
@@ -102,6 +103,7 @@ namespace domoio {
   private:
     boost::asio::local::stream_protocol::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
+    bool disconnected;
 
     void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);

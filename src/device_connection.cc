@@ -81,6 +81,13 @@ namespace domoio {
 
 
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
+
+
+    if (((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !disconnected) {
+      this->disconnected = true;
+      LOG << "Device Disconnected\n";
+    }
+
     if (error) { return ; }
 
     // If session not started, dispatch clean data
