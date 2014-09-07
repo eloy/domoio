@@ -1,6 +1,7 @@
 #ifndef DOMOIO_H
 #define DOMOIO_H
 #include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <time.h>
@@ -34,10 +35,28 @@ namespace domoio {
    * Domoio Server
    */
 
-  class DeviceConnection {
+
+  // Connection
+
+  class Connection {
   public:
-    ~DeviceConnection();
+    void dispatch_request(std::string);
+
+    virtual bool create_session(int) { return false; }
+    virtual bool send(std::string) { return false; }
+    virtual bool close() { return false; }
+    virtual bool login(const char *) {return false; }
+
+  };
+
+
+  // Device Connection
+
+  class DeviceConnection : public Connection {
+  public:
     DeviceConnection(boost::asio::io_service&);
+    ~DeviceConnection();
+
     boost::asio::ip::tcp::socket& get_socket(void);
     void start();
     bool send(std::string);
@@ -56,14 +75,40 @@ namespace domoio {
     bool send_crypted(const char*, int);
     void handle_write(const boost::system::error_code&);
 
-    void dispatch_request(std::string);
-
     Device *device;
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;
   };
 
+
+
+  // Control Connection
+
+  class ControlConnection : public Connection {
+  public:
+    ControlConnection(boost::asio::io_service&);
+    ~ControlConnection();
+
+    boost::asio::local::stream_protocol::socket& get_socket(void) { return socket; }
+    void start();
+
+    void read();
+    bool close();
+    bool send(std::string);
+
+    bool create_session(int);
+    bool login(const char *);
+  private:
+    boost::asio::local::stream_protocol::socket socket;
+    char data[CLIENT_BUFFER_MAX_LENGTH];
+
+    void handle_read(const boost::system::error_code&, size_t );
+    void handle_write(const boost::system::error_code&);
+  };
+
+
+  // Domoio Device Protocol Server
 
   class Server {
   public:
@@ -77,6 +122,23 @@ namespace domoio {
     boost::asio::ip::tcp::acceptor acceptor;
   };
 
+
+  // Control Server
+  class ControlServer {
+  public:
+    ControlServer(boost::asio::io_service& , const std::string&);
+
+  private:
+    void start_accept(void);
+    void handle_accept(ControlConnection*, const boost::system::error_code&);
+
+
+    boost::asio::io_service& io_service;
+    boost::asio::local::stream_protocol::acceptor acceptor;
+  };
+
+  //-------------------------------------------------------------
+
   bool run_server(void);
   bool start_server(void);
   bool stop_server(void);
@@ -88,7 +150,7 @@ namespace domoio {
    * Commands
    */
   typedef std::vector<std::string>* CommandParams;
-  typedef void (*CommandCallback)(DeviceConnection*, CommandParams);
+  typedef void (*CommandCallback)(Connection*, CommandParams);
 
   int register_server_command(std::string, CommandCallback);
 
