@@ -1,6 +1,9 @@
 #ifndef DOMOIO_TEST_H
 #define DOMOIO_TEST_H
 #include <gtest/gtest.h>
+
+#define DOMOIO_CONFIG_FILE "config_test"
+#define DOMOIO_UNIX_SOCKET_PATH "domoio_test.sock"
 #include "domoio.h"
 
 
@@ -21,6 +24,7 @@ namespace domoio {
 
     virtual void TearDown() {
       domoio::db::close();
+      remove(conf_opt::socket_path.c_str());
     }
   };
 

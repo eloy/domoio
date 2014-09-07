@@ -17,7 +17,7 @@ namespace domoio {
 
   namespace conf_opt {
     extern int port;
-    extern std::string socket;
+    extern std::string socket_path;
   }
   // Config
   extern boost::program_options::variables_map conf;

@@ -1,6 +1,7 @@
 #ifndef DOMOIO_H
 #define DOMOIO_H
 #include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <time.h>

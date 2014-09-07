@@ -11,7 +11,7 @@ namespace domoio {
     try {
       LOG << "Starting server in port " << conf_opt::port << "\n";
       Server server(io_service, conf_opt::port);
-      ControlServer control_server(io_service, conf_opt::socket);
+      ControlServer control_server(io_service, conf_opt::socket_path);
 
       boost::asio::io_service::work work(io_service);
       io_service.run();
@@ -35,7 +35,8 @@ namespace domoio {
     try {
       if (server == 0) {
         server = new Server(io_service, conf_opt::port);
-        control_server = new ControlServer(io_service, conf_opt::socket);
+        // TODO: Fix config
+        // control_server = new ControlServer(io_service, conf_opt::socket_path);
         boost::asio::io_service::work work(io_service);
       }
       else {
@@ -59,6 +60,7 @@ namespace domoio {
   bool stop_server(void) {
     io_service.stop();
     m_threads.join_all();
+    remove(conf_opt::socket_path.c_str());
     return true;
   }
 }
