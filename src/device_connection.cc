@@ -81,34 +81,32 @@ namespace domoio {
 
 
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
-    if (!error) {
-      // Decrypt if session started
-      if (this->session_started) {
-        try {
-          int len = bytes_transferred - 1;
-          unsigned char *crypted = domoio::crypto::hex_decode(&this->data[0], &len);
-          char * clean = this->block_cipher->decrypt(crypted, &len);
+    if (error) { return ; }
 
-          std::string str(clean);
-          this->dispatch_request(str);
-          free(crypted);
-          free(clean);
-        }
-        catch (std::exception& e) {
-          LOG << "Error decoding input: " << e.what() << "\n";
-          this->session_started = false;
-          this->send("400 Bad Request");
-          this->close();
-        }
-      }
-      // Or read clean text
-      else {
-        this->dispatch_request(&this->data[0]);
-      }
-
-    } else {
-      // delete this;
+    // If session not started, dispatch clean data
+    if (!this->session_started) {
+      this->dispatch_request(&this->data[0]);
+      return;
     }
+
+    // Decrypt if session started
+    try {
+      int len = bytes_transferred - 1;
+      unsigned char *crypted = domoio::crypto::hex_decode(&this->data[0], &len);
+      char * clean = this->block_cipher->decrypt(crypted, &len);
+
+      std::string str(clean);
+      this->dispatch_request(str);
+      free(crypted);
+      free(clean);
+    }
+    catch (std::exception& e) {
+      LOG << "Error decoding input: " << e.what() << "\n";
+      this->session_started = false;
+      this->send("400 Bad Request");
+      this->close();
+    }
+
   }
 
 
