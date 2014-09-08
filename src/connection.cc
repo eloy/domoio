@@ -5,11 +5,12 @@ namespace domoio {
   // }
 
   // Register Server Commands
-  std::map<std::string, CommandCallback> server_commands;
+  std::map<std::string, CommandDef*> server_commands;
 
-  int register_server_command(std::string name, CommandCallback command) {
-    server_commands[name] = command;
-    return 1;
+  bool register_server_command(std::string name, CommandDef *def) {
+
+    server_commands[name] = def;
+    return true;
   }
 
 
@@ -34,14 +35,14 @@ namespace domoio {
 
     // Execute callback
 
-    CommandCallback callback = server_commands[params[0]];
-    if (callback == NULL) {
+    CommandDef *def = server_commands[params[0]];
+    if (def == NULL) {
       printf("Invalid Command: '%s'\n", params[0].c_str());
       this->send("400 Bad Request");
       return;
     }
 
-    callback(this, &params);
+    def->callback(this, &params);
   }
 
 }

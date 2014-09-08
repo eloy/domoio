@@ -155,7 +155,16 @@ namespace domoio {
   typedef std::vector<std::string>* CommandParams;
   typedef void (*CommandCallback)(Connection*, CommandParams);
 
-  int register_server_command(std::string, CommandCallback);
+  class CommandDef {
+  public:
+    CommandDef(CommandCallback callback_, int argc_, std::string help_) : callback(callback_), argc(argc_), help(help_) {}
+
+    CommandCallback callback;
+    int argc;
+    std::string help;
+  };
+
+  bool register_server_command(std::string, CommandDef*);
 
 }
 

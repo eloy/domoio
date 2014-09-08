@@ -12,7 +12,7 @@ namespace domoio {
       }
     }
 
-    int cmd_login_id = domoio::register_server_command("login", &login);
+    bool cmd_login_registered = domoio::register_server_command("login", new CommandDef(&login, 1, "Sign in"));
 
   }
 }

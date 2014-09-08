@@ -10,7 +10,7 @@ namespace domoio {
       }
     }
 
-    int cmd_create_session_id = domoio::register_server_command("create_session", &create_session);
+    bool cmd_create_session_registerd = domoio::register_server_command("create_session", new CommandDef(&create_session, 1, "Start session"));
 
   }
 }

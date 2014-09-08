@@ -6,6 +6,6 @@ namespace domoio {
       conn->close();
     }
 
-    int cmd_exit_id = domoio::register_server_command("exit", &exit);
+    bool cmd_exit_registerd = domoio::register_server_command("exit", new CommandDef(&exit, 0, "Exit"));
   }
 }
