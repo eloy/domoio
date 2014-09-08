@@ -15,6 +15,9 @@ namespace domoio {
 
   // Dispatch Request from devices
   void Connection::dispatch_request(std::string str) {
+    boost::trim_right(str);
+
+
     // Tokenize command
     boost::char_separator<char> separator(" ");
     boost::tokenizer<boost::char_separator<char> > tok(str, separator);

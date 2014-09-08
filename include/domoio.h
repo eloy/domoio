@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "config.h"
 #include "exceptions.h"
 #include "database.h"
