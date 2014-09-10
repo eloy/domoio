@@ -8,6 +8,7 @@
 #include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/signals2.hpp>
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -76,11 +77,15 @@ namespace domoio {
     bool session_started;
     bool logged_in;
     bool disconnected;
+    boost::signals2::connection device_signals_conn;
 
     void handle_read(const boost::system::error_code&, size_t );
     bool send_raw(const char*, int);
     bool send_crypted(const char*, int);
     void handle_write(const boost::system::error_code&);
+    void register_device_signals(void);
+    void unregister_device_signals(void);
+    void on_device_signal(std::string);
   };
 
 

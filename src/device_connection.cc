@@ -3,22 +3,23 @@
 
 namespace domoio {
 
-
-  DeviceConnection::~DeviceConnection(void) {
-    if (this->device != 0) {
-      delete this->device;
-    }
-
-    if (this->block_cipher != 0) {
-      delete this->block_cipher;
-    }
-  }
-
+  // Constructor
   DeviceConnection::DeviceConnection(boost::asio::io_service& io_service) : socket(io_service) {
     this->device = 0;
     this->block_cipher = 0;
     this->session_started = false;
     this->logged_in = false;
+  }
+
+  // Destructor
+  DeviceConnection::~DeviceConnection(void) {
+    if (this->device != 0) {
+      this->unregister_device_signals();
+    }
+
+    if (this->block_cipher != 0) {
+      delete this->block_cipher;
+    }
   }
 
   boost::asio::ip::tcp::socket& DeviceConnection::get_socket(void) {
@@ -150,6 +151,10 @@ namespace domoio {
     // TODO: Implement this
     if (strcmp(passwd, "1234") == 0) {
       this->logged_in = true;
+
+      // Connect to signals
+      this->register_device_signals();
+
       return true;
     } else {
       return false;
@@ -165,4 +170,21 @@ namespace domoio {
   bool DeviceConnection::is_session_started() {
     return this->session_started;
   }
+
+
+  // Signals
+  //-------------------------------------------------------------------
+
+  void DeviceConnection::register_device_signals(void) {
+    this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
+  }
+
+  void DeviceConnection::unregister_device_signals(void) {
+    this->device_signals_conn.disconnect();
+  }
+
+  void DeviceConnection::on_device_signal(std::string str) {
+    this->send(str);
+  }
+
 }

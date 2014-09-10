@@ -90,6 +90,18 @@ namespace domoio {
     return true;
   }
 
+  bool TestDevice::login() {
+    this->read();
+    this->assert_data_eq("Hey, protocol=1.0\n");
+    this->send("create_session 1");
+    this->read();
+    this->start_session(this->get_data());
+    this->send("login 1234");
+    this->read();
+    this->assert_data_eq("200 WELCOME");
+    return true;
+  }
+
   void TestDevice::assert_data_eq(const char* str) {
     ASSERT_STREQ(str, this->data);
   }

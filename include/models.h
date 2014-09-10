@@ -39,7 +39,7 @@ namespace domoio {
     std::string manufacturer_id;
     std::string model;
     std::string password;
-
+    boost::signals2::signal<void (std::string)> network_signals;
   private:
     void parse_specifications(const char *);
     std::map<std::string, Port*> ports;

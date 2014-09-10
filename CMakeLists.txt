@@ -87,6 +87,7 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/server_test
   ./test/features/create_session_test
+  ./test/features/signals_test
 )
 
 # Unit
