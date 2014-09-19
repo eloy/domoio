@@ -79,10 +79,12 @@ namespace domoio {
     bool disconnected;
     boost::signals2::connection device_signals_conn;
 
-    void handle_read(const boost::system::error_code&, size_t );
+
     bool send_raw(const char*, int);
     bool send_crypted(const char*, int);
+    void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);
+    void process_input(const char*, int);
     void register_device_signals(void);
     void unregister_device_signals(void);
     void on_device_signal(std::string);

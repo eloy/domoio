@@ -91,16 +91,34 @@ namespace domoio {
 
     if (error) { return ; }
 
+    this->process_input(&this->data[0], bytes_transferred);
+    this->read();
+  }
+
+
+
+  void DeviceConnection::handle_write(const boost::system::error_code& error) {
+    if (!error) {
+      // this->read();
+    } else {
+      // delete this;
+    }
+  }
+
+  // Process input
+  //--------------------------------------------------------------------
+
+  void DeviceConnection::process_input(const char* input_data, int bytes_transferred) {
     // If session not started, dispatch clean data
     if (!this->session_started) {
-      this->dispatch_request(&this->data[0]);
+      this->dispatch_request(input_data);
       return;
     }
 
     // Decrypt if session started
     try {
       int len = bytes_transferred - 1;
-      unsigned char *crypted = domoio::crypto::hex_decode(&this->data[0], &len);
+      unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
       char * clean = this->block_cipher->decrypt(crypted, &len);
 
       std::string str(clean);
@@ -116,17 +134,6 @@ namespace domoio {
     }
 
   }
-
-
-
-  void DeviceConnection::handle_write(const boost::system::error_code& error) {
-    if (!error) {
-      this->read();
-    } else {
-      // delete this;
-    }
-  }
-
 
   // Session Management
   //--------------------------------------------------------------------
@@ -184,6 +191,7 @@ namespace domoio {
   }
 
   void DeviceConnection::on_device_signal(std::string str) {
+    LOG << "Signal: " << str << "\n";
     this->send(str);
   }
 
