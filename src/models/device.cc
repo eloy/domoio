@@ -72,4 +72,29 @@ namespace domoio {
     }
   }
 
+
+  bool Device::set_port_state(std::string port_id, std::string value) {
+    BOOST_LOG_TRIVIAL(trace) << "set_port_state:" << this->id;
+    Port *port = this->port(port_id.c_str());
+    // if (port == NULL) return false;
+
+    char buffer[CLIENT_BUFFER_MAX_LENGTH];
+    snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %s %s", port_id.c_str(), value.c_str());
+    this->network_signals(&buffer[0]);
+    return true;
+  }
+
+  bool device_set_port_state(std::string target_url, std::string value) {
+    int device_id;
+    char port[target_url.length()];
+
+    BOOST_LOG_TRIVIAL(trace) << "Received target_url: " << target_url;
+    sscanf(target_url.c_str(), "%d::%s", &device_id, &port[0]);
+    Device *device = device_find(device_id);
+    BOOST_LOG_TRIVIAL(trace) << "Sending to device: " << device_id << "(" << device->id << ")";
+    if (device == NULL)  return false;
+
+    return device->set_port_state(&port[0], value);
+  }
+
 }

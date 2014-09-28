@@ -57,6 +57,7 @@ namespace domoio {
     } else {
       this->send_raw(msg.c_str(), msg.length());
     }
+    LOG << "sent: " << msg;
     return true;
   }
 
@@ -93,7 +94,11 @@ namespace domoio {
   bool TestDevice::login() {
     this->read();
     this->assert_data_eq("Hey, protocol=1.0\n");
-    this->send("create_session 1");
+
+    std::stringstream buffer;
+    buffer << "create_session " << this->id;
+
+    this->send(buffer.str());
     this->read();
     this->start_session(this->get_data());
     this->send("login 1234");

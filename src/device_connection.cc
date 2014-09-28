@@ -36,6 +36,7 @@ namespace domoio {
   // Read and Write
   //--------------------------------------------------------------------
   bool DeviceConnection::send(std::string msg) {
+    BOOST_LOG_TRIVIAL(trace) << "sending: " << msg;
     if (this->session_started) {
       return this->send_crypted(msg.c_str(), msg.size());
     } else {
@@ -52,11 +53,13 @@ namespace domoio {
     return true;
   }
 
-  bool DeviceConnection::send_raw(const char* str, int length) {
-    boost::asio::async_write(socket,
-                             boost::asio::buffer(str, length + 1),
-                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
-                             );
+  bool DeviceConnection::send_raw(const char* msg, int length) {
+
+    bool write_in_progress = !this->message_queue.empty();
+    this->message_queue.push_back(std::string(msg, length + 1));
+    if (!write_in_progress) {
+      this->write();
+    }
     return true;
   }
 
@@ -71,6 +74,13 @@ namespace domoio {
 
   }
 
+  void DeviceConnection::write() {
+    boost::asio::async_write(socket,
+                             boost::asio::buffer(this->message_queue.front().data(), this->message_queue.front().length()),
+                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
+                             );
+
+  }
 
   bool DeviceConnection::close() {
     this->socket.close();
@@ -82,8 +92,6 @@ namespace domoio {
 
 
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
-
-
     if (((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !disconnected) {
       this->disconnected = true;
       LOG << "Device Disconnected\n";
@@ -98,10 +106,10 @@ namespace domoio {
 
 
   void DeviceConnection::handle_write(const boost::system::error_code& error) {
-    if (!error) {
-      // this->read();
-    } else {
-      // delete this;
+    if (error) { return ; }
+    this->message_queue.pop_front();
+    if (!this->message_queue.empty()) {
+      this->write();
     }
   }
 
@@ -161,7 +169,7 @@ namespace domoio {
 
       // Connect to signals
       this->register_device_signals();
-
+      BOOST_LOG_TRIVIAL(trace) << "Device logged in: " << this->device->id;
       return true;
     } else {
       return false;
@@ -183,6 +191,7 @@ namespace domoio {
   //-------------------------------------------------------------------
 
   void DeviceConnection::register_device_signals(void) {
+    BOOST_LOG_TRIVIAL(trace) << "Registering signals device: " << this->device->id;
     this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
   }
 
@@ -191,7 +200,7 @@ namespace domoio {
   }
 
   void DeviceConnection::on_device_signal(std::string str) {
-    LOG << "Signal: " << str << "\n";
+    BOOST_LOG_TRIVIAL(trace) << "Signal: " << str << "\n";
     this->send(str);
   }
 

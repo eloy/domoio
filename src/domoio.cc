@@ -2,6 +2,8 @@
 
 namespace domoio {
   void init_domoio(void) {
+    BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
+
     domoio::db::connect();
     domoio::load_devices();
 
