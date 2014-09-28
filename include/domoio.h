@@ -12,6 +12,10 @@
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#define BOOST_LOG_DYN_LINK
+#include <boost/log/trivial.hpp>
 #include "config.h"
 #include "exceptions.h"
 #include "database.h"

@@ -31,7 +31,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 # BOOST
 include_directories(/Users/harlock/src/c/boost)
-set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options)
+set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup -lboost_filesystem -lboost_date_time)
 
 # Add sources
 
