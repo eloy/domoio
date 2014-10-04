@@ -27,7 +27,7 @@ namespace domoio {
   }
 
   void DeviceConnection::start(){
-    this->send("Hey, protocol=1.0\n");
+    this->send("Hey, protocol=1.0");
     this->read();
   }
 
@@ -36,7 +36,7 @@ namespace domoio {
   // Read and Write
   //--------------------------------------------------------------------
   bool DeviceConnection::send(std::string msg) {
-    BOOST_LOG_TRIVIAL(trace) << "sending: " << msg;
+    BOOST_LOG_TRIVIAL(trace) << "sending: '"<< msg << "'";
     if (this->session_started) {
       return this->send_crypted(msg.c_str(), msg.size());
     } else {
@@ -45,10 +45,16 @@ namespace domoio {
   }
 
   bool DeviceConnection::send_crypted(const char* str, int length) {
-    unsigned char * enc = this->block_cipher->encrypt(str, &length);
-    char *hex = domoio::crypto::hex_encode(enc, &length);
+    // unsigned char * enc = this->block_cipher->encrypt(str, &length);
+    // char *hex = domoio::crypto::hex_encode(enc, &length);
+    // this->send_raw(hex, length);
+    // free(enc);
+    // free(hex);
+    // return true;
+
+    // DISABLE ENCRYPTATION
+    char *hex = domoio::crypto::hex_encode((unsigned char*)str, &length);
     this->send_raw(hex, length);
-    free(enc);
     free(hex);
     return true;
   }
@@ -56,7 +62,7 @@ namespace domoio {
   bool DeviceConnection::send_raw(const char* msg, int length) {
 
     bool write_in_progress = !this->message_queue.empty();
-    this->message_queue.push_back(std::string(msg, length + 1));
+    this->message_queue.push_back(std::string(msg, length));
     if (!write_in_progress) {
       this->write();
     }
@@ -75,8 +81,11 @@ namespace domoio {
   }
 
   void DeviceConnection::write() {
+    std::stringstream stream;
+    stream << this->message_queue.front().data() << "\n";
+    int length = this->message_queue.front().length() + 1;
     boost::asio::async_write(socket,
-                             boost::asio::buffer(this->message_queue.front().data(), this->message_queue.front().length()),
+                             boost::asio::buffer(stream.str(), length),
                              boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
                              );
 
@@ -94,7 +103,7 @@ namespace domoio {
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !disconnected) {
       this->disconnected = true;
-      LOG << "Device Disconnected\n";
+      BOOST_LOG_TRIVIAL(trace) << "Device Disconnected\n";
     }
 
     if (error) { return ; }
@@ -125,17 +134,26 @@ namespace domoio {
 
     // Decrypt if session started
     try {
-      int len = bytes_transferred - 1;
-      unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
-      char * clean = this->block_cipher->decrypt(crypted, &len);
+      // int len = bytes_transferred - 1;
+      // unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
+      // char * clean = this->block_cipher->decrypt(crypted, &len);
 
-      std::string str(clean);
+      // std::string str(clean, len);
+      // this->dispatch_request(str);
+      // free(crypted);
+      // free(clean);
+
+      // DISABLE ENCRYPTATION
+      int len = bytes_transferred - 1;
+      unsigned char *clean = domoio::crypto::hex_decode(input_data, &len);
+
+      std::string str((char*)clean, len);
       this->dispatch_request(str);
-      free(crypted);
       free(clean);
+
     }
     catch (std::exception& e) {
-      LOG << "Error decoding input: " << e.what() << "\n";
+      BOOST_LOG_TRIVIAL(trace) << "Error decoding input: " << e.what() << "\n";
       this->session_started = false;
       this->send("400 Bad Request");
       this->close();

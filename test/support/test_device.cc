@@ -30,13 +30,22 @@ namespace domoio {
       size_t bytes_transferred = socket.read_some(boost::asio::buffer(data, CLIENT_BUFFER_MAX_LENGTH), error);
 
       if (this->session_started) {
+        // int len =  bytes_transferred;
+        // unsigned char *crypted = domoio::crypto::hex_decode(this->data, &len);
+        // char * clean = this->block_cipher->decrypt(crypted, &len);
+        // memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
+        // memcpy(data, clean, len);
+        // free(crypted);
+        // free(clean);
+
+
+        // DISABLE ENCRYPTATION
         int len =  bytes_transferred;
-        unsigned char *crypted = domoio::crypto::hex_decode(this->data, &len);
-        char * clean = this->block_cipher->decrypt(crypted, &len);
+        unsigned char *clean = domoio::crypto::hex_decode(this->data, &len);
         memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
         memcpy(data, clean, len);
-        free(crypted);
         free(clean);
+
       }
 
       if (error == boost::asio::error::eof)
@@ -57,7 +66,6 @@ namespace domoio {
     } else {
       this->send_raw(msg.c_str(), msg.length());
     }
-    LOG << "sent: " << msg;
     return true;
   }
 
@@ -67,10 +75,16 @@ namespace domoio {
   }
 
   bool TestDevice::send_crypted(const char *str, int length) {
-    unsigned char * enc = this->block_cipher->encrypt(str, &length);
-    char *hex = domoio::crypto::hex_encode(enc, &length);
+    // unsigned char * enc = this->block_cipher->encrypt(str, &length);
+    // char *hex = domoio::crypto::hex_encode(enc, &length);
+    // this->send_raw(hex, length);
+    // free(enc);
+    // free(hex);
+    // return true;
+
+    // DISABLE ENCRIPTATION
+    char *hex = domoio::crypto::hex_encode((unsigned char*) str, &length);
     this->send_raw(hex, length);
-    free(enc);
     free(hex);
     return true;
   }

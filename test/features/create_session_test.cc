@@ -10,7 +10,7 @@ TEST(CreateSession, invalid_device) {
   device.assert_data_eq("Hey, protocol=1.0\n");
   device.send("create_session 1");
   device.read();
-  device.assert_data_eq("406 Not Acceptable");
+  device.assert_data_eq("406 Not Acceptable\n");
   domoio::stop_server();
 }
 
