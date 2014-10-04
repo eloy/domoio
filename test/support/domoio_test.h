@@ -50,6 +50,7 @@ namespace domoio {
     }
 
     bool connect(void);
+    bool login(void);
     bool close(void);
     bool read(void);
     bool send(std::string);

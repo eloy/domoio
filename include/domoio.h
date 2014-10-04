@@ -4,13 +4,19 @@
 #include <cstdio>
 #include <iostream>
 #include <sstream>
+#include <deque>
 #include <time.h>
 #include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/signals2.hpp>
 #include <boost/thread.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#define BOOST_LOG_DYN_LINK
+#include <boost/log/trivial.hpp>
 #include "config.h"
 #include "exceptions.h"
 #include "database.h"
@@ -53,7 +59,7 @@ namespace domoio {
 
   // Device Connection
 
-  class DeviceConnection : public Connection {
+  class DeviceConnection : public Connection,  public boost::enable_shared_from_this<DeviceConnection> {
   public:
     DeviceConnection(boost::asio::io_service&);
     ~DeviceConnection();
@@ -62,6 +68,7 @@ namespace domoio {
     void start();
     bool send(std::string);
     void read();
+    void write();
     bool login(const char *);
     bool is_logged_in();
     bool is_session_started();
@@ -70,17 +77,24 @@ namespace domoio {
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
+    std::deque<std::string> message_queue;
 
     Device *device;
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;
     bool disconnected;
+    boost::signals2::connection device_signals_conn;
 
-    void handle_read(const boost::system::error_code&, size_t );
+
     bool send_raw(const char*, int);
     bool send_crypted(const char*, int);
+    void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);
+    void process_input(const char*, int);
+    void register_device_signals(void);
+    void unregister_device_signals(void);
+    void on_device_signal(std::string);
   };
 
 

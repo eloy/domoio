@@ -17,7 +17,7 @@ namespace domoio {
   // Dispatch Request from devices
   void Connection::dispatch_request(std::string str) {
     boost::trim_right(str);
-
+    BOOST_LOG_TRIVIAL(trace) << "Processing request: " << str;
 
     // Tokenize command
     boost::char_separator<char> separator(" ");

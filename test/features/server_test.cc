@@ -22,7 +22,7 @@ TEST(Server, invalid_command) {
   device.read();
   device.send("foo");
   device.read();
-  device.assert_data_eq("400 Bad Request");
+  device.assert_data_eq("400 Bad Request\n");
   device.close();
   domoio::stop_server();
 }
@@ -36,7 +36,7 @@ TEST(Server, empty_command) {
   device.read();
   device.send("");
   device.read();
-  device.assert_data_eq("400 Bad Request");
+  device.assert_data_eq("400 Bad Request\n");
   device.close();
   domoio::stop_server();
 }

@@ -3,17 +3,7 @@
 
 namespace domoio {
 
-
-  DeviceConnection::~DeviceConnection(void) {
-    if (this->device != 0) {
-      delete this->device;
-    }
-
-    if (this->block_cipher != 0) {
-      delete this->block_cipher;
-    }
-  }
-
+  // Constructor
   DeviceConnection::DeviceConnection(boost::asio::io_service& io_service) : socket(io_service) {
     this->device = 0;
     this->block_cipher = 0;
@@ -21,12 +11,23 @@ namespace domoio {
     this->logged_in = false;
   }
 
+  // Destructor
+  DeviceConnection::~DeviceConnection(void) {
+    if (this->device != 0) {
+      this->unregister_device_signals();
+    }
+
+    if (this->block_cipher != 0) {
+      delete this->block_cipher;
+    }
+  }
+
   boost::asio::ip::tcp::socket& DeviceConnection::get_socket(void) {
     return socket;
   }
 
   void DeviceConnection::start(){
-    this->send("Hey, protocol=1.0\n");
+    this->send("Hey, protocol=1.0");
     this->read();
   }
 
@@ -35,6 +36,7 @@ namespace domoio {
   // Read and Write
   //--------------------------------------------------------------------
   bool DeviceConnection::send(std::string msg) {
+    BOOST_LOG_TRIVIAL(trace) << "sending: '"<< msg << "'";
     if (this->session_started) {
       return this->send_crypted(msg.c_str(), msg.size());
     } else {
@@ -43,19 +45,27 @@ namespace domoio {
   }
 
   bool DeviceConnection::send_crypted(const char* str, int length) {
-    unsigned char * enc = this->block_cipher->encrypt(str, &length);
-    char *hex = domoio::crypto::hex_encode(enc, &length);
+    // unsigned char * enc = this->block_cipher->encrypt(str, &length);
+    // char *hex = domoio::crypto::hex_encode(enc, &length);
+    // this->send_raw(hex, length);
+    // free(enc);
+    // free(hex);
+    // return true;
+
+    // DISABLE ENCRYPTATION
+    char *hex = domoio::crypto::hex_encode((unsigned char*)str, &length);
     this->send_raw(hex, length);
-    free(enc);
     free(hex);
     return true;
   }
 
-  bool DeviceConnection::send_raw(const char* str, int length) {
-    boost::asio::async_write(socket,
-                             boost::asio::buffer(str, length + 1),
-                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
-                             );
+  bool DeviceConnection::send_raw(const char* msg, int length) {
+
+    bool write_in_progress = !this->message_queue.empty();
+    this->message_queue.push_back(std::string(msg, length));
+    if (!write_in_progress) {
+      this->write();
+    }
     return true;
   }
 
@@ -70,6 +80,16 @@ namespace domoio {
 
   }
 
+  void DeviceConnection::write() {
+    std::stringstream stream;
+    stream << this->message_queue.front().data() << "\n";
+    int length = this->message_queue.front().length() + 1;
+    boost::asio::async_write(socket,
+                             boost::asio::buffer(stream.str(), length),
+                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
+                             );
+
+  }
 
   bool DeviceConnection::close() {
     this->socket.close();
@@ -81,51 +101,65 @@ namespace domoio {
 
 
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
-
-
     if (((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !disconnected) {
       this->disconnected = true;
-      LOG << "Device Disconnected\n";
+      BOOST_LOG_TRIVIAL(trace) << "Device Disconnected\n";
     }
 
     if (error) { return ; }
 
+    this->process_input(&this->data[0], bytes_transferred);
+    this->read();
+  }
+
+
+
+  void DeviceConnection::handle_write(const boost::system::error_code& error) {
+    if (error) { return ; }
+    this->message_queue.pop_front();
+    if (!this->message_queue.empty()) {
+      this->write();
+    }
+  }
+
+  // Process input
+  //--------------------------------------------------------------------
+
+  void DeviceConnection::process_input(const char* input_data, int bytes_transferred) {
     // If session not started, dispatch clean data
     if (!this->session_started) {
-      this->dispatch_request(&this->data[0]);
+      this->dispatch_request(input_data);
       return;
     }
 
     // Decrypt if session started
     try {
-      int len = bytes_transferred - 1;
-      unsigned char *crypted = domoio::crypto::hex_decode(&this->data[0], &len);
-      char * clean = this->block_cipher->decrypt(crypted, &len);
+      // int len = bytes_transferred - 1;
+      // unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
+      // char * clean = this->block_cipher->decrypt(crypted, &len);
 
-      std::string str(clean);
+      // std::string str(clean, len);
+      // this->dispatch_request(str);
+      // free(crypted);
+      // free(clean);
+
+      // DISABLE ENCRYPTATION
+      int len = bytes_transferred - 1;
+      unsigned char *clean = domoio::crypto::hex_decode(input_data, &len);
+
+      std::string str((char*)clean, len);
       this->dispatch_request(str);
-      free(crypted);
       free(clean);
+
     }
     catch (std::exception& e) {
-      LOG << "Error decoding input: " << e.what() << "\n";
+      BOOST_LOG_TRIVIAL(trace) << "Error decoding input: " << e.what() << "\n";
       this->session_started = false;
       this->send("400 Bad Request");
       this->close();
     }
 
   }
-
-
-
-  void DeviceConnection::handle_write(const boost::system::error_code& error) {
-    if (!error) {
-      this->read();
-    } else {
-      // delete this;
-    }
-  }
-
 
   // Session Management
   //--------------------------------------------------------------------
@@ -150,6 +184,10 @@ namespace domoio {
     // TODO: Implement this
     if (strcmp(passwd, "1234") == 0) {
       this->logged_in = true;
+
+      // Connect to signals
+      this->register_device_signals();
+      BOOST_LOG_TRIVIAL(trace) << "Device logged in: " << this->device->id;
       return true;
     } else {
       return false;
@@ -165,4 +203,23 @@ namespace domoio {
   bool DeviceConnection::is_session_started() {
     return this->session_started;
   }
+
+
+  // Signals
+  //-------------------------------------------------------------------
+
+  void DeviceConnection::register_device_signals(void) {
+    BOOST_LOG_TRIVIAL(trace) << "Registering signals device: " << this->device->id;
+    this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
+  }
+
+  void DeviceConnection::unregister_device_signals(void) {
+    this->device_signals_conn.disconnect();
+  }
+
+  void DeviceConnection::on_device_signal(std::string str) {
+    BOOST_LOG_TRIVIAL(trace) << "Signal: " << str << "\n";
+    this->send(str);
+  }
+
 }

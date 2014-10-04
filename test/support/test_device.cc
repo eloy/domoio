@@ -30,13 +30,22 @@ namespace domoio {
       size_t bytes_transferred = socket.read_some(boost::asio::buffer(data, CLIENT_BUFFER_MAX_LENGTH), error);
 
       if (this->session_started) {
+        // int len =  bytes_transferred;
+        // unsigned char *crypted = domoio::crypto::hex_decode(this->data, &len);
+        // char * clean = this->block_cipher->decrypt(crypted, &len);
+        // memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
+        // memcpy(data, clean, len);
+        // free(crypted);
+        // free(clean);
+
+
+        // DISABLE ENCRYPTATION
         int len =  bytes_transferred;
-        unsigned char *crypted = domoio::crypto::hex_decode(this->data, &len);
-        char * clean = this->block_cipher->decrypt(crypted, &len);
+        unsigned char *clean = domoio::crypto::hex_decode(this->data, &len);
         memset(data, 0, CLIENT_BUFFER_MAX_LENGTH);
         memcpy(data, clean, len);
-        free(crypted);
         free(clean);
+
       }
 
       if (error == boost::asio::error::eof)
@@ -66,10 +75,16 @@ namespace domoio {
   }
 
   bool TestDevice::send_crypted(const char *str, int length) {
-    unsigned char * enc = this->block_cipher->encrypt(str, &length);
-    char *hex = domoio::crypto::hex_encode(enc, &length);
+    // unsigned char * enc = this->block_cipher->encrypt(str, &length);
+    // char *hex = domoio::crypto::hex_encode(enc, &length);
+    // this->send_raw(hex, length);
+    // free(enc);
+    // free(hex);
+    // return true;
+
+    // DISABLE ENCRIPTATION
+    char *hex = domoio::crypto::hex_encode((unsigned char*) str, &length);
     this->send_raw(hex, length);
-    free(enc);
     free(hex);
     return true;
   }
@@ -87,6 +102,22 @@ namespace domoio {
     this->block_cipher = new domoio::crypto::BlockCipher(this->password, iv);
     this->session_started = true;
     free(iv);
+    return true;
+  }
+
+  bool TestDevice::login() {
+    this->read();
+    this->assert_data_eq("Hey, protocol=1.0\n");
+
+    std::stringstream buffer;
+    buffer << "create_session " << this->id;
+
+    this->send(buffer.str());
+    this->read();
+    this->start_session(this->get_data());
+    this->send("login 1234");
+    this->read();
+    this->assert_data_eq("200 WELCOME");
     return true;
   }
 

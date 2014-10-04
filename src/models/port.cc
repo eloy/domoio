@@ -22,5 +22,4 @@ namespace domoio {
     return _output;
   }
 
-
 }

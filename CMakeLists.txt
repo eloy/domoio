@@ -31,7 +31,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 # BOOST
 include_directories(/Users/harlock/src/c/boost)
-set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options)
+set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup -lboost_filesystem -lboost_date_time)
 
 # Add sources
 
@@ -61,6 +61,7 @@ set(SRC ${SRC}
   ./src/commands/cmd_exit
   ./src/commands/cmd_create_session
   ./src/commands/cmd_login
+  ./src/commands/cmd_set
 )
 
 
@@ -87,6 +88,8 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/server_test
   ./test/features/create_session_test
+  ./test/features/signals_test
+  ./test/features/cmd_set_test
 )
 
 # Unit
