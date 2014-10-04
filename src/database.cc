@@ -9,8 +9,8 @@ namespace domoio {
 
 
     void connect(void) {
-      const char *conninfo;
-      conninfo = "dbname=house_development user=ruby password=indeos host=localhost";
+      char conninfo[256];
+      snprintf(conninfo, 256, "dbname=%s user=%s password=%s host=%s", conf_opt::db_name.c_str(), conf_opt::db_user.c_str(), conf_opt::db_password.c_str(), conf_opt::db_host.c_str());
       conn = PQconnectdb(conninfo);
       if (PQstatus(conn) != CONNECTION_OK) {
         fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(conn));

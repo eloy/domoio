@@ -18,6 +18,12 @@ namespace domoio {
   namespace conf_opt {
     extern int port;
     extern std::string socket_path;
+
+    // DATABASE
+    extern std::string db_name;
+    extern std::string db_user;
+    extern std::string db_password;
+    extern std::string db_host;
   }
   // Config
   extern boost::program_options::variables_map conf;
