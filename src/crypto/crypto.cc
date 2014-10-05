@@ -49,12 +49,8 @@ namespace domoio {
         throw "Can't allocate memory";
       }
 
-      // Create a temporal buffer becouse we are going to overwrite the buffer each loop
-      char *tmp = (char*) malloc(sizeof(char) * *length);
-      strncpy(tmp, input, *length);
-
       for (int i=0; i < req_length; i++) {
-        buffer[i] = strtol(tmp, &tmp, 16);
+        buffer[i] = strtol(input + (i*3), NULL, 16);
       }
 
       *length = req_length;
