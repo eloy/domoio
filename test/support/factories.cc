@@ -3,7 +3,7 @@
 
 namespace domoio {
 
-  const char *SPECIFICATIONS = "{\"serial\":\"1234\",\"manufacturer\":\"0x01\",\"model\":\"0x01\",\"description\":\"Alargadera 4 puertos\",\"ports\":[{\"name\":\"dio01\",\"digital\":true,\"output\":true},{\"name\":\"dio02\",\"digital\":true,\"output\":true},{\"name\":\"dio03\",\"digital\":true,\"output\":true},{\"name\":\"dio04\",\"digital\":true,\"output\":true}]}\n";
+  const char *SPECIFICATIONS = "{\"serial\":\"1234\",\"manufacturer\":\"0x01\",\"model\":\"0x01\",\"description\":\"Alargadera 4 puertos\",\"ports\":[{\"id\":0,\"name\":\"dio01\",\"digital\":true,\"output\":true},{\"id\":1,\"name\":\"dio02\",\"digital\":true,\"output\":true},{\"id\":2,\"name\":\"dio03\",\"digital\":true,\"output\":true},{\"id\":3,\"name\":\"dio04\",\"digital\":true,\"output\":true}]}\n";
 
 
 

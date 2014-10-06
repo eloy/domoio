@@ -45,12 +45,13 @@ namespace domoio {
 
   Device::Device(int id_, const char *label_, const char *specs, const char *password_)
     : id(id_), label(label_), password(password_) {
+    this->connected = false;
     this->parse_specifications(specs);
   }
 
   Device::~Device(void) {
-    BOOST_FOREACH(keypair(Port*) c, this->ports) {
-      delete c.second;
+    for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
+      delete(it->second);
     }
   }
 
@@ -67,34 +68,40 @@ namespace domoio {
     this->model = pt.get<std::string>("model");
 
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("ports")) {
-      Port *port = new Port(v.second.get<std::string>("name"), v.second.get<bool>("digital"), v.second.get<bool>("output"));
-      this->ports[port->name()] = port;
+      Port *port = new Port(v.second.get<int>("id"), v.second.get<std::string>("name"), v.second.get<bool>("digital"), v.second.get<bool>("output"));
+      this->ports[port->id()] = port;
     }
   }
 
 
-  bool Device::set_port_state(std::string port_id, std::string value) {
+  bool Device::set_port_state(int port_id, int value) {
     BOOST_LOG_TRIVIAL(trace) << "set_port_state:" << this->id;
-    Port *port = this->port(port_id.c_str());
-    // if (port == NULL) return false;
+    Port *port = this->port(port_id);
+    if (port == NULL) return false;
+
+    if (port->value() == value) {
+      return true;
+    }
+
+    port->set_value(value);
 
     char buffer[CLIENT_BUFFER_MAX_LENGTH];
-    snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %s %s", port_id.c_str(), value.c_str());
+    snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", port_id, value);
     this->network_signals(&buffer[0]);
+
+    // TODO send change event
     return true;
   }
 
-  bool device_set_port_state(std::string target_url, std::string value) {
+  bool device_set_port_state(std::string target_url, int value) {
     int device_id;
-    char port[target_url.length()];
+    int port_id;
 
-    BOOST_LOG_TRIVIAL(trace) << "Received target_url: " << target_url;
-    sscanf(target_url.c_str(), "%d::%s", &device_id, &port[0]);
+    sscanf(target_url.c_str(), "%d::%d", &device_id, &port_id);
     Device *device = device_find(device_id);
-    BOOST_LOG_TRIVIAL(trace) << "Sending to device: " << device_id << "(" << device->id << ")";
     if (device == NULL)  return false;
 
-    return device->set_port_state(&port[0], value);
+    return device->set_port_state(port_id, value);
   }
 
 }

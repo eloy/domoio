@@ -17,7 +17,6 @@ namespace domoio {
     virtual ~TestEnvironment() {}
 
     virtual void SetUp() {
-      domoio::setup_config_options();
       domoio::init_domoio();
     }
 

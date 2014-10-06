@@ -188,6 +188,7 @@ namespace domoio {
       // Connect to signals
       this->register_device_signals();
       BOOST_LOG_TRIVIAL(trace) << "Device logged in: " << this->device->id;
+
       return true;
     } else {
       return false;

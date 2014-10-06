@@ -7,17 +7,21 @@ namespace domoio {
 
   class Port {
   public:
-    Port(std::string name, bool digital, bool output) : _name(name), _digital(digital), _output(output) {};
+  Port(int id, std::string name, bool digital, bool output) : _id(id), _name(name), _digital(digital), _output(output) {};
     const char *name();
-    bool digital();
-    bool analogic();
-    bool output();
-    bool input();
-
+    bool digital() { return this->_digital; }
+    bool analogic() { return !this->_digital; }
+    bool output() { return this->_output; }
+    bool input() { return !this->_output; }
+    int id() { return this->_id; }
+    int value() { return this->_value; }
+    void set_value(int);
   private:
+    int _id;
     std::string _name;
     bool _digital;
     bool _output;
+    int _value;
   };
 
   class Device {
@@ -25,14 +29,16 @@ namespace domoio {
     Device(int, const char*, const char*, const char*);
     ~Device(void);
 
-    bool set_port_state(std::string, std::string);
-
+    bool set_port_state(int, int);
     bool password_matchs(std::string);
+
+    bool connect();
+    bool is_connected() { return this->connected; }
 
     int id;
     std::string label;
     int ports_count() { return this->ports.size(); }
-
+    Port *port(int id) { return this->ports[id]; }
 
     // Serialized fields
     std::string description;
@@ -42,10 +48,9 @@ namespace domoio {
     std::string password;
     boost::signals2::signal<void (std::string)> network_signals;
   private:
+    bool connected;
     void parse_specifications(const char *);
-    std::map<std::string, Port*> ports;
-
-    Port *port(const char* name) { return this->ports[name]; }
+    std::map<int, Port*> ports;
 
   };
 
@@ -54,7 +59,7 @@ namespace domoio {
   void free_devices(void);
   Device *device_find(int);
 
-  bool device_set_port_state(std::string, std::string);
+  bool device_set_port_state(std::string, int);
 }
 
 #endif //MODELS_H
