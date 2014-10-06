@@ -2,6 +2,7 @@
 
 namespace domoio {
   ControlConnection::ControlConnection(boost::asio::io_service& io_service) : socket(io_service) {
+    BOOST_LOG_TRIVIAL(trace) << "Started Control Connection";
   }
 
 

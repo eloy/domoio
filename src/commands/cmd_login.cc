@@ -3,7 +3,7 @@
 namespace domoio {
   namespace commands {
 
-    static void login(Connection *conn, CommandParams params) {
+    static void login(DeviceConnection *conn, CommandParams params) {
       if (conn->login(params->at(1).c_str())) {
         conn->send("200 WELCOME");
       } else {
@@ -12,7 +12,7 @@ namespace domoio {
       }
     }
 
-    bool cmd_login_registered = domoio::register_server_command("login", new CommandDef(&login, 1, "Sign in"));
+    bool cmd_login_registered = domoio::register_device_command("login", new DeviceCommandDef(&login, 1, "Sign in"));
 
   }
 }

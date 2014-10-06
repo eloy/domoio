@@ -5,11 +5,17 @@ namespace domoio {
   // }
 
   // Register Server Commands
-  std::map<std::string, CommandDef*> server_commands;
+  std::map<std::string, DeviceCommandDef*> device_commands;
 
-  bool register_server_command(std::string name, CommandDef *def) {
+  bool register_device_command(std::string name, DeviceCommandDef *def) {
+    device_commands[name] = def;
+    return true;
+  }
 
-    server_commands[name] = def;
+
+  std::map<std::string, ControlCommandDef*> control_commands;
+  bool register_control_command(std::string name, ControlCommandDef *def) {
+    control_commands[name] = def;
     return true;
   }
 
@@ -34,15 +40,34 @@ namespace domoio {
     }
 
     // Execute callback
+    this->execute_callback(params);
+  }
 
-    CommandDef *def = server_commands[params[0]];
+
+  // Called by dispatch_request
+  bool DeviceConnection::execute_callback(std::vector<std::string> params) {
+    DeviceCommandDef *def = device_commands[params[0]];
     if (def == NULL) {
       printf("Invalid Command: '%s'\n", params[0].c_str());
       this->send("400 Bad Request");
-      return;
+      return false;
     }
 
     def->callback(this, &params);
+    return true;
+  }
+
+  // Called by dispatch_request
+  bool ControlConnection::execute_callback(std::vector<std::string> params) {
+    ControlCommandDef *def = control_commands[params[0]];
+    if (def == NULL) {
+      printf("Invalid Command: '%s'\n", params[0].c_str());
+      this->send("400 Bad Request");
+      return false;
+    }
+
+    def->callback(this, &params);
+    return true;
   }
 
 }

@@ -112,6 +112,7 @@ set(TEST_DEP_LIBS ${TEST_DEP_LIBS} -lgtest -lgtest_main)
 include_directories(./test/support)
 set(TEST_SRC ${TEST_SRC}
   ./test/support/test_device
+  ./test/support/test_control
   ./test/support/factories
 )
 

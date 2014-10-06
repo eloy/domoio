@@ -18,6 +18,7 @@ namespace domoio {
 
     virtual void SetUp() {
       domoio::init_domoio();
+      remove(conf_opt::socket_path.c_str());
     }
 
 
@@ -59,8 +60,11 @@ namespace domoio {
 
     int id;
     const char *password;
+
+
     boost::asio::io_service& io_service;
     boost::asio::ip::tcp::socket socket;
+
     char data[CLIENT_BUFFER_MAX_LENGTH];
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
@@ -70,6 +74,32 @@ namespace domoio {
   };
 
 
+  class TestControl {
+  public:
+    TestControl(boost::asio::io_service &_io_service) :
+      io_service(_io_service),  socket(_io_service) {
+    }
+
+    TestControl(boost::asio::io_service& _io_service, int _id, const char* _password) :
+      io_service(_io_service),  socket(_io_service), id(_id), password(_password) {
+    }
+
+    bool connect(void);
+
+    bool close(void);
+    bool read(void);
+    bool send(std::string);
+    char* data(void);
+
+    int id;
+    const char *password;
+
+    boost::asio::io_service& io_service;
+    boost::asio::local::stream_protocol::socket socket;
+
+
+    char buffer[CLIENT_BUFFER_MAX_LENGTH];
+  };
 
 
   // FACTORIES

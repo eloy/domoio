@@ -53,7 +53,7 @@ namespace domoio {
     virtual bool send(std::string) { return false; }
     virtual bool close() { return false; }
     virtual bool login(const char *) {return false; }
-
+    virtual bool execute_callback(std::vector<std::string>) { return false; }
   };
 
 
@@ -74,6 +74,9 @@ namespace domoio {
     bool is_session_started();
     bool close();
     bool create_session(int);
+    bool execute_callback(std::vector<std::string>);
+    Device* get_device() { return this->device; }
+
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
@@ -115,6 +118,7 @@ namespace domoio {
 
     bool create_session(int);
     bool login(const char *);
+    bool execute_callback(std::vector<std::string>);
   private:
     boost::asio::local::stream_protocol::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
@@ -167,18 +171,31 @@ namespace domoio {
    * Commands
    */
   typedef std::vector<std::string>* CommandParams;
-  typedef void (*CommandCallback)(Connection*, CommandParams);
+  typedef void (*DeviceCommandCallback)(DeviceConnection*, CommandParams);
+  typedef void (*ControlCommandCallback)(ControlConnection*, CommandParams);
 
-  class CommandDef {
+  class DeviceCommandDef {
   public:
-    CommandDef(CommandCallback callback_, int argc_, std::string help_) : callback(callback_), argc(argc_), help(help_) {}
+    DeviceCommandDef(DeviceCommandCallback callback_, int argc_, std::string help_) : callback(callback_), argc(argc_), help(help_) {}
 
-    CommandCallback callback;
+    DeviceCommandCallback callback;
     int argc;
     std::string help;
   };
 
-  bool register_server_command(std::string, CommandDef*);
+
+  bool register_device_command(std::string, DeviceCommandDef*);
+
+  class ControlCommandDef {
+  public:
+  ControlCommandDef(ControlCommandCallback callback_, int argc_, std::string help_) : callback(callback_), argc(argc_), help(help_) {}
+
+    ControlCommandCallback callback;
+    int argc;
+    std::string help;
+  };
+
+  bool register_control_command(std::string, ControlCommandDef*);
 
 }
 

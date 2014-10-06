@@ -2,10 +2,10 @@
 
 namespace domoio {
   namespace commands {
-    static void exit(Connection *conn, CommandParams params) {
+    static void exit(ControlConnection *conn, CommandParams params) {
       conn->close();
     }
 
-    bool cmd_exit_registerd = domoio::register_server_command("exit", new CommandDef(&exit, 0, "Exit"));
+    bool cmd_exit_registerd = domoio::register_control_command("exit", new ControlCommandDef(&exit, 0, "Exit"));
   }
 }

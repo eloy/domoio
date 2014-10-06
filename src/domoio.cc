@@ -13,6 +13,6 @@ namespace domoio {
 
 
   void exit_domoio(void) {
-    remove(conf_opt::socket_path.c_str());
+
   }
 }

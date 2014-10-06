@@ -96,7 +96,7 @@ namespace domoio {
     return true;
   }
 
-  // Callbacks
+  // Connection Callbacks
   //--------------------------------------------------------------------
 
 
