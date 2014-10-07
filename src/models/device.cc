@@ -75,7 +75,7 @@ namespace domoio {
 
 
   bool Device::set_port_state(int port_id, int value) {
-    BOOST_LOG_TRIVIAL(trace) << "set_port_state:" << this->id;
+    LOG(trace) << "set_port_state:" << this->id;
     Port *port = this->port(port_id);
     if (port == NULL) return false;
 

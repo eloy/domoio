@@ -11,7 +11,7 @@ namespace domoio {
       // ASSERT_STREQ("Hey, protocol=1.0\n", &this->buffer[0]);
     }
     catch (std::exception& e) {
-      BOOST_LOG_TRIVIAL(fatal) << "TestControl connection error: " << e.what();
+      LOG(fatal) << "TestControl connection error: " << e.what();
     }
 
     return true;
@@ -43,7 +43,7 @@ namespace domoio {
   }
 
   bool TestControl::send(std::string msg) {
-    BOOST_LOG_TRIVIAL(fatal) << "Sending: " << msg;
+    LOG(trace) << "Sending: " << msg;
     boost::asio::write(socket, boost::asio::buffer(msg.c_str(), msg.length()));
     return true;
   }

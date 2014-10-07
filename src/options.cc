@@ -41,7 +41,7 @@ namespace domoio {
 
       ifstream ifs(config_file_name.c_str());
       if (!ifs) {
-        BOOST_LOG_TRIVIAL(fatal) << "Can not open config file: " << config_file_name << "\n";
+        LOG(fatal) << "Can not open config file: " << config_file_name << "\n";
       } else {
         store(parse_config_file(ifs, config_file_options), conf);
         notify(conf);

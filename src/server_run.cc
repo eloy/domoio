@@ -9,7 +9,7 @@ namespace domoio {
 
   bool run_server(void) {
     try {
-      BOOST_LOG_TRIVIAL(trace) << "Starting server in port " << conf_opt::port << "\n";
+      LOG(trace) << "Starting server in port " << conf_opt::port << "\n";
       Server server(io_service, conf_opt::port);
       ControlServer control_server(io_service, conf_opt::socket_path);
 
@@ -50,7 +50,7 @@ namespace domoio {
       return true;
     }
     catch (std::exception& e) {
-      BOOST_LOG_TRIVIAL(fatal) << "Exception: " << e.what() << "\n";
+      LOG(fatal) << "Exception: " << e.what() << "\n";
       return false;
     }
   }

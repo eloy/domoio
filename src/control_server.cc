@@ -24,7 +24,7 @@ namespace domoio {
 
   void ControlServer::handle_accept(ControlConnection* conn, const boost::system::error_code& error) {
     if (!error) {
-      LOG << "Local Connection Started\n";
+      LOG(info) << "Local Connection Started\n";
       conn->start();
     } else {
       delete conn;

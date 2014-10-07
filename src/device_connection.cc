@@ -36,7 +36,7 @@ namespace domoio {
   // Read and Write
   //--------------------------------------------------------------------
   bool DeviceConnection::send(std::string msg) {
-    BOOST_LOG_TRIVIAL(trace) << "sending: '"<< msg << "'";
+    LOG(trace) << "sending: '"<< msg << "'";
     if (this->session_started) {
       return this->send_crypted(msg.c_str(), msg.size());
     } else {
@@ -103,7 +103,7 @@ namespace domoio {
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !disconnected) {
       this->disconnected = true;
-      BOOST_LOG_TRIVIAL(trace) << "Device Disconnected\n";
+      LOG(trace) << "Device Disconnected\n";
     }
 
     if (error) { return ; }
@@ -153,7 +153,7 @@ namespace domoio {
 
     }
     catch (std::exception& e) {
-      BOOST_LOG_TRIVIAL(trace) << "Error decoding input: " << e.what() << "\n";
+      LOG(trace) << "Error decoding input: " << e.what() << "\n";
       this->session_started = false;
       this->send("400 Bad Request");
       this->close();
@@ -187,7 +187,7 @@ namespace domoio {
 
       // Connect to signals
       this->register_device_signals();
-      BOOST_LOG_TRIVIAL(trace) << "Device logged in: " << this->device->id;
+      LOG(trace) << "Device logged in: " << this->device->id;
 
       return true;
     } else {
@@ -210,7 +210,7 @@ namespace domoio {
   //-------------------------------------------------------------------
 
   void DeviceConnection::register_device_signals(void) {
-    BOOST_LOG_TRIVIAL(trace) << "Registering signals device: " << this->device->id;
+    LOG(trace) << "Registering signals device: " << this->device->id;
     this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
   }
 
@@ -219,7 +219,7 @@ namespace domoio {
   }
 
   void DeviceConnection::on_device_signal(std::string str) {
-    BOOST_LOG_TRIVIAL(trace) << "Signal: " << str << "\n";
+    LOG(trace) << "Signal: " << str << "\n";
     this->send(str);
   }
 

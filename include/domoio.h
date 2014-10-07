@@ -24,7 +24,8 @@
 #include "crypt.h"
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 #define SERVER_THREADS 1
-#define LOG std::cout
+
+#define LOG BOOST_LOG_TRIVIAL
 
 int test_crypt(void);
 
