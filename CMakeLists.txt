@@ -62,6 +62,7 @@ set(SRC ${SRC}
   ./src/commands/cmd_create_session
   ./src/commands/cmd_login
   ./src/commands/cmd_set
+  ./src/commands/cmd_all_ports_state
 )
 
 
@@ -90,6 +91,7 @@ set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/create_session_test
   ./test/features/signals_test
   ./test/features/cmd_set_test
+  ./test/features/cmd_all_ports_state_test
 )
 
 # Unit
