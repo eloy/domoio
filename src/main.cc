@@ -1,5 +1,4 @@
 #include "domoio.h"
-#include "events.h"
 
 void on_exit() {
   domoio::exit_domoio();

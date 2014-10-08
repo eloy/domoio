@@ -21,6 +21,7 @@
 #include "exceptions.h"
 #include "database.h"
 #include "models.h"
+#include "events.h"
 #include "crypt.h"
 
 #define CLIENT_BUFFER_MAX_LENGTH 1024

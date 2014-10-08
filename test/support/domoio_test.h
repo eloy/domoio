@@ -5,7 +5,6 @@
 #define DOMOIO_CONFIG_FILE "config_test"
 #define DOMOIO_UNIX_SOCKET_PATH "domoio_test.sock"
 #include "domoio.h"
-#include "events.h"
 
 #define DOMOIO_ENV_TEST
 

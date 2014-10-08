@@ -1,5 +1,4 @@
 #include "domoio.h"
-#include "events.h"
 
 namespace domoio {
   void Port::set_value(int new_value) {

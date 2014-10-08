@@ -1,5 +1,4 @@
 #include "domoio.h"
-#include "events.h"
 
 namespace domoio {
 

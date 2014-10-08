@@ -3,7 +3,6 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 
-#include "events.h"
 namespace domoio {
   void init_domoio(void) {
     namespace logging = boost::log;
