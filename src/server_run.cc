@@ -1,4 +1,5 @@
 #include "domoio.h"
+#include "events.h"
 
 namespace domoio {
 
@@ -31,7 +32,7 @@ namespace domoio {
   Server *server = 0;
   ControlServer *control_server = 0;
 
-  bool start_server(void) {
+  bool start_network_servers(void) {
     try {
       if (server == 0 && control_server == 0) {
         server = new Server(io_service, conf_opt::port);
@@ -56,10 +57,20 @@ namespace domoio {
   }
 
 
-  bool stop_server(void) {
+  bool stop_network_servers(void) {
     io_service.stop();
     m_threads.join_all();
     io_service.reset();
     return true;
+  }
+
+
+
+  bool start_server(void) {
+    return events::start() && start_network_servers();
+  }
+
+  bool stop_server(void) {
+    return stop_network_servers() && events::stop();
   }
 }

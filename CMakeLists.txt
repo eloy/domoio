@@ -44,6 +44,7 @@ set(SRC ${SRC}
   ./src/connection
   ./src/device_connection
   ./src/control_connection
+  ./src/events
   ./src/database
   ./src/crypto/crypto
   ./src/crypto/block_cipher
@@ -88,6 +89,7 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 # Features
 set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/server_test
+  ./test/features/events_test
   ./test/features/create_session_test
   ./test/features/signals_test
   ./test/features/cmd_set_test

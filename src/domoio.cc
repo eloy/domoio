@@ -3,6 +3,7 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 
+#include "events.h"
 namespace domoio {
   void init_domoio(void) {
     namespace logging = boost::log;
@@ -17,6 +18,7 @@ namespace domoio {
 
 
   void exit_domoio(void) {
-
+    domoio::events::stop();
+    remove(conf_opt::socket_path.c_str());
   }
 }

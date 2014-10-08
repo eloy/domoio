@@ -5,7 +5,7 @@
 #define DOMOIO_CONFIG_FILE "config_test"
 #define DOMOIO_UNIX_SOCKET_PATH "domoio_test.sock"
 #include "domoio.h"
-
+#include "events.h"
 
 #define DOMOIO_ENV_TEST
 
@@ -30,11 +30,17 @@ namespace domoio {
 
 
 
-  class DomoioTest  : public testing::Test {
+  class FeatureTest  : public testing::Test {
   protected:
     virtual void SetUp() {
-
+      domoio::events::start();
+      domoio::start_server();
     }
+    virtual void TearDown() {
+      domoio::events::stop();
+      domoio::stop_server();
+    }
+
   };
 
   class TestDevice {

@@ -68,7 +68,7 @@ namespace domoio {
     this->model = pt.get<std::string>("model");
 
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("ports")) {
-      Port *port = new Port(v.second.get<int>("id"), v.second.get<std::string>("name"), v.second.get<bool>("digital"), v.second.get<bool>("output"));
+      Port *port = new Port(this, v.second.get<int>("id"), v.second.get<std::string>("name"), v.second.get<bool>("digital"), v.second.get<bool>("output"));
       this->ports[port->id()] = port;
     }
   }

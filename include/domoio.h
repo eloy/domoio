@@ -22,6 +22,7 @@
 #include "database.h"
 #include "models.h"
 #include "crypt.h"
+
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 #define SERVER_THREADS 1
 

@@ -210,7 +210,6 @@ namespace domoio {
   //-------------------------------------------------------------------
 
   void DeviceConnection::register_device_signals(void) {
-    LOG(trace) << "Registering signals device: " << this->device->id;
     this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
   }
 
@@ -219,7 +218,6 @@ namespace domoio {
   }
 
   void DeviceConnection::on_device_signal(std::string str) {
-    LOG(trace) << "Signal: " << str << "\n";
     this->send(str);
   }
 
