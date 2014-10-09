@@ -15,6 +15,7 @@ TEST(cmd_set, send_signal_to_device) {
 
   control.connect();
   control.send("set 1::1 1");
+  control.read();
 
   device_1.read();
   ASSERT_STREQ(device_1.get_data(), "set 1 1");

@@ -18,7 +18,7 @@ namespace domoio {
       // Sent when a device change the state of a port
       port_set,
       // Sent when a device is connected
-      device_conneced,
+      device_connected,
       // Sent when a device is disconnected
       device_disconnected
 
@@ -59,6 +59,10 @@ namespace domoio {
 
     Event(events::type _type, int _old_value) :
       type(_type), old_value(_old_value) {
+    }
+
+    Event(events::type _type, Device*  _device) :
+      type(_type), device(_device) {
     }
 
     Event(events::type _type, int _old_value, int _new_value) :

@@ -48,7 +48,7 @@ namespace domoio {
   bool DeviceConnection::execute_callback(std::vector<std::string> params) {
     DeviceCommandDef *def = device_commands[params[0]];
     if (def == NULL) {
-      LOG(warning) << "Invalid Command: " << params[0];
+      LOG(warning) << "Invalid device command " << params[0];
       this->send("400 Bad Request");
       return false;
     }
@@ -61,7 +61,7 @@ namespace domoio {
   bool ControlConnection::execute_callback(std::vector<std::string> params) {
     ControlCommandDef *def = control_commands[params[0]];
     if (def == NULL) {
-      LOG(warning) << "Invalid Command: " << params[0];
+      LOG(warning) << "Invalid control command: " << params[0];
       this->send("400 Bad Request");
       return false;
     }
