@@ -4,6 +4,7 @@
 #define EVENT_HANDLER_THREADS 1
 
 namespace domoio {
+  typedef boost::signals2::connection signals_connection;
 
   class Event {
   public:
@@ -23,12 +24,15 @@ namespace domoio {
       name(_name), device(_device), port(_port), old_value(_old_value), new_value(_new_value) {
     }
 
+    std::string to_json();
+
     std::string name;
     Port *port;
     Device *device;
     int old_value;
     int new_value;
   };
+
 
   namespace events {
 
@@ -57,8 +61,8 @@ namespace domoio {
 
       void handle(Event*);
 
-      template<typename CompletionHandler> void add_listener(CompletionHandler handler) {
-        this->event_signals.connect(handler);
+      template<typename CompletionHandler> signals_connection add_listener(CompletionHandler handler) {
+        return this->event_signals.connect(handler);
       }
 
     private:
@@ -66,8 +70,8 @@ namespace domoio {
     };
 
     extern EventsService events_service;
-    template<typename CompletionHandler> void add_listener(CompletionHandler handler) {
-      events_service.add_listener(handler);
+    template<typename CompletionHandler> signals_connection add_listener(CompletionHandler handler) {
+      return events_service.add_listener(handler);
     }
   }
 }

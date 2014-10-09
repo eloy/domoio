@@ -63,4 +63,8 @@ namespace domoio {
 
   }
 
+  std::string Event::to_json() {
+    return "pollo.json";
+  }
+
 }

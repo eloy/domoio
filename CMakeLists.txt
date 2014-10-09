@@ -64,6 +64,7 @@ set(SRC ${SRC}
   ./src/commands/cmd_login
   ./src/commands/cmd_set
   ./src/commands/cmd_all_ports_state
+  ./src/commands/cmd_start_events
 )
 
 
@@ -118,6 +119,7 @@ set(TEST_SRC ${TEST_SRC}
   ./test/support/test_device
   ./test/support/test_control
   ./test/support/factories
+  ./test/support/helpers
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})

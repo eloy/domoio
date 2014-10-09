@@ -2,14 +2,12 @@
 
 namespace domoio {
   ControlConnection::ControlConnection(boost::asio::io_service& io_service) : socket(io_service) {
-    LOG(trace) << "Started Control Connection";
   }
 
 
-  ControlConnection::~ControlConnection() {
-  }
 
   void ControlConnection::start(){
+    LOG(trace) << "Started Control Connection";
     this->send("Hey, protocol=1.0\n");
     this->read();
   }
@@ -51,8 +49,6 @@ namespace domoio {
     this->socket.close();
     return true;
   }
-
-
 
 
   bool ControlConnection::create_session(int user_id) {

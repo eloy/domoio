@@ -1,22 +1,41 @@
 #include "domoio_test.h"
 
-
-bool test_bool = false;
-
-void callback(domoio::Event* event) {
-  test_bool = true;
-}
-
 TEST(events, send_global_events) {
   domoio::events::start();
   domoio::events::send(new domoio::Event("test_event"));
-  domoio::events::add_listener(&callback);
-  int count = 0;
-
-  while(!test_bool || count < 1000) {
-    count++;
-  }
-
-  ASSERT_TRUE(test_bool);
+  ASSERT_TRUE(domoio::expect_events(1));
   domoio::events::stop();
+}
+
+
+TEST(events, control_receive_events) {
+  domoio::Device *m_device = domoio::factory_device(1, "foo", "0123456789abcdef");
+  domoio::start_server();
+
+  boost::asio::io_service io_service_1;
+  boost::asio::io_service io_service_2;
+  boost::asio::io_service io_service_3;
+
+  domoio::TestDevice device_1(io_service_1, 1, "0123456789abcdef");
+  domoio::TestControl control_1(io_service_2);
+  domoio::TestControl control_2(io_service_3);
+
+  device_1.connect();
+  device_1.login();
+
+  control_1.connect();
+  control_1.send("start_events");
+  control_1.read();
+
+  control_2.connect();
+  control_2.send("set 1::1 1");
+  control_2.read();
+
+  control_1.read();
+  ASSERT_STREQ(control_1.data(), "pollo.json");
+
+  device_1.close();
+  control_1.close();
+  control_2.close();
+  domoio::stop_server();
 }

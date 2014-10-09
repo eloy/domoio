@@ -45,7 +45,6 @@ namespace domoio {
    * Domoio Server
    */
 
-
   // Connection
 
   class Connection {
@@ -90,7 +89,7 @@ namespace domoio {
     bool session_started;
     bool logged_in;
     bool disconnected;
-    boost::signals2::connection device_signals_conn;
+    signals_connection device_signals_conn;
 
 
     bool send_raw(const char*, int);
@@ -110,7 +109,9 @@ namespace domoio {
   class ControlConnection : public Connection {
   public:
     ControlConnection(boost::asio::io_service&);
-    ~ControlConnection();
+    ~ControlConnection() {
+      this->stop_listening_events();
+    }
 
     boost::asio::local::stream_protocol::socket& get_socket(void) { return socket; }
     void start();
@@ -122,9 +123,27 @@ namespace domoio {
     bool create_session(int);
     bool login(const char *);
     bool execute_callback(std::vector<std::string>);
+
+    // Events
+    void start_listening_events() {
+      this->events_connection = domoio::events::add_listener(boost::bind(&ControlConnection::send_event, this, _1));
+      broadcasting_events = true;
+    }
+    void stop_listening_events() {
+      if (this->broadcasting_events) {
+        this->events_connection.disconnect();
+        broadcasting_events = false;
+      }
+    }
+    void send_event(Event* event) { this->send(event->to_json()); }
+
   private:
     boost::asio::local::stream_protocol::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
+
+    signals_connection events_connection;
+    bool broadcasting_events;
+
     bool disconnected;
 
     void handle_read(const boost::system::error_code&, size_t );

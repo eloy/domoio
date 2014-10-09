@@ -9,7 +9,7 @@
 #define DOMOIO_ENV_TEST
 
 namespace domoio {
-
+  bool expect_events(int);
 
   class TestEnvironment : public ::testing::Environment {
   public:
