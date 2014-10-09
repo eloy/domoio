@@ -21,6 +21,7 @@ namespace domoio {
     void EventsService::handle(Event * event) {
       LOG(trace) << "Event: " << event->type;
       this->event_signals(event);
+      delete(event);
     }
 
 

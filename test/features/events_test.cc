@@ -33,7 +33,7 @@ TEST(events, control_receive_events) {
 
   control_1.read();
 
-  const char* expected = "{\n    \"type\": \"port_set\",\n    \"device_id\": \"1\",\n    \"port_id\": \"1\",\n    \"value\": \"1\",\n    \"old_value\": \"0\"\n}\n";
+  const char* expected = "event_data {\n    \"type\": \"port_set\",\n    \"device_id\": \"1\",\n    \"port_id\": \"1\",\n    \"value\": \"1\",\n    \"old_value\": \"0\"\n}\n";
   ASSERT_STREQ(control_1.data(), expected);
 
   device_1.close();

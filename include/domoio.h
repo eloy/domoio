@@ -135,7 +135,7 @@ namespace domoio {
         broadcasting_events = false;
       }
     }
-    void send_event(Event* event) { this->send(event->to_json()); }
+    void send_event(Event* event) { this->send("event_data " + event->to_json()); }
 
   private:
     boost::asio::local::stream_protocol::socket socket;
