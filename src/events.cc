@@ -78,8 +78,15 @@ namespace domoio {
       pt.put("old_value", this->old_value);
       break;
 
+    // Device Connected
     case events::device_connected:
       pt.put("type", "device_connected");
+      pt.put("device_id", this->device->id);
+      break;
+
+    // Device Disconnected
+    case events::device_disconnected:
+      pt.put("type", "device_disconnected");
       pt.put("device_id", this->device->id);
       break;
 
