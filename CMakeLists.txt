@@ -44,6 +44,7 @@ set(SRC ${SRC}
   ./src/connection
   ./src/device_connection
   ./src/control_connection
+  ./src/events
   ./src/database
   ./src/crypto/crypto
   ./src/crypto/block_cipher
@@ -63,6 +64,7 @@ set(SRC ${SRC}
   ./src/commands/cmd_login
   ./src/commands/cmd_set
   ./src/commands/cmd_all_ports_state
+  ./src/commands/cmd_start_events
 )
 
 
@@ -88,6 +90,7 @@ target_link_libraries (domoio domoio_base ${DEP_LIBS})
 # Features
 set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/server_test
+  ./test/features/events_test
   ./test/features/create_session_test
   ./test/features/signals_test
   ./test/features/cmd_set_test
@@ -116,6 +119,7 @@ set(TEST_SRC ${TEST_SRC}
   ./test/support/test_device
   ./test/support/test_control
   ./test/support/factories
+  ./test/support/helpers
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})

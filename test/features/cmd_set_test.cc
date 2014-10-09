@@ -3,7 +3,6 @@
 TEST(cmd_set, send_signal_to_device) {
   const char *password = "0123456789abcdef";
   domoio::Device *m_device = domoio::factory_device(1, "foo", password);
-
   domoio::start_server();
   boost::asio::io_service io_service_1;
   boost::asio::io_service io_service_2;
@@ -16,12 +15,12 @@ TEST(cmd_set, send_signal_to_device) {
 
   control.connect();
   control.send("set 1::1 1");
+  control.read();
 
   device_1.read();
   ASSERT_STREQ(device_1.get_data(), "set 1 1");
 
   device_1.close();
   control.close();
-
   domoio::stop_server();
 }

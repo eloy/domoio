@@ -20,6 +20,7 @@ namespace domoio {
     if (this->block_cipher != 0) {
       delete this->block_cipher;
     }
+
   }
 
   boost::asio::ip::tcp::socket& DeviceConnection::get_socket(void) {
@@ -93,6 +94,10 @@ namespace domoio {
 
   bool DeviceConnection::close() {
     this->socket.close();
+
+    // Send event
+    events::send(new Event(events::device_disconnected, this->device));
+
     return true;
   }
 
@@ -176,8 +181,10 @@ namespace domoio {
     this->block_cipher = new domoio::crypto::BlockCipher(this->device->password);
     this->send(this->block_cipher->session_string().c_str());
     this->session_started = true;
-    return true;
 
+    // Send event
+    events::send(new Event(events::device_connected, this->device));
+    return true;
   }
 
   bool DeviceConnection::login(const char * passwd) {
@@ -210,7 +217,6 @@ namespace domoio {
   //-------------------------------------------------------------------
 
   void DeviceConnection::register_device_signals(void) {
-    LOG(trace) << "Registering signals device: " << this->device->id;
     this->device_signals_conn = this->device->network_signals.connect(boost::bind(&DeviceConnection::on_device_signal, this,_1));
   }
 
@@ -219,7 +225,6 @@ namespace domoio {
   }
 
   void DeviceConnection::on_device_signal(std::string str) {
-    LOG(trace) << "Signal: " << str << "\n";
     this->send(str);
   }
 

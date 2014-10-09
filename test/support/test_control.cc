@@ -8,7 +8,7 @@ namespace domoio {
       boost::asio::local::stream_protocol::endpoint ep(conf_opt::socket_path);
       this->socket.connect(ep);
       this->read();
-      // ASSERT_STREQ("Hey, protocol=1.0\n", &this->buffer[0]);
+      EXPECT_STREQ(&this->buffer[0], "Hey, protocol=1.0\n");
     }
     catch (std::exception& e) {
       LOG(fatal) << "TestControl connection error: " << e.what();

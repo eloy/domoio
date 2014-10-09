@@ -17,6 +17,7 @@ namespace domoio {
 
 
   void exit_domoio(void) {
-
+    domoio::events::stop();
+    remove(conf_opt::socket_path.c_str());
   }
 }
