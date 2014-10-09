@@ -1,4 +1,6 @@
 #include "domoio.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace domoio {
 
@@ -17,7 +19,7 @@ namespace domoio {
     }
 
     void EventsService::handle(Event * event) {
-      LOG(trace) << "Event: " << event->name;
+      LOG(trace) << "Event: " << event->type;
       this->event_signals(event);
     }
 
@@ -64,7 +66,24 @@ namespace domoio {
   }
 
   std::string Event::to_json() {
-    return "pollo.json";
+    using boost::property_tree::ptree;
+    ptree pt;
+
+    switch(this->type) {
+    case events::port_set:
+      pt.put("type", "port_set");
+      pt.put("device_id", this->device->id);
+      pt.put("port_id", this->port->id());
+      pt.put("value", this->new_value);
+      pt.put("old_value", this->old_value);
+      break;
+    default:
+      pt.put("type", "unkuwn");
+    }
+
+    std::stringstream ss;
+    write_json(ss, pt);
+    return ss.str();
   }
 
 }

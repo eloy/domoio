@@ -2,7 +2,7 @@
 
 TEST(events, send_global_events) {
   domoio::events::start();
-  domoio::events::send(new domoio::Event("test_event"));
+  domoio::events::send(new domoio::Event(domoio::events::port_set));
   ASSERT_TRUE(domoio::expect_events(1));
   domoio::events::stop();
 }
@@ -32,7 +32,9 @@ TEST(events, control_receive_events) {
   control_2.read();
 
   control_1.read();
-  ASSERT_STREQ(control_1.data(), "pollo.json");
+
+  const char* expected = "{\n    \"type\": \"port_set\",\n    \"device_id\": \"1\",\n    \"port_id\": \"1\",\n    \"value\": \"1\",\n    \"old_value\": \"0\"\n}\n";
+  ASSERT_STREQ(control_1.data(), expected);
 
   device_1.close();
   control_1.close();

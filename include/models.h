@@ -9,7 +9,9 @@ namespace domoio {
 
   class Port {
   public:
-  Port(Device* _device, int id, std::string name, bool digital, bool output) : device(_device), _id(id), _name(name), _digital(digital), _output(output) {};
+    Port(Device* _device, int id, std::string name, bool digital, bool output) : device(_device), _id(id), _name(name), _digital(digital), _output(output) {
+      this->_value = 0;
+    };
     const char *name();
     bool digital() { return this->_digital; }
     bool analogic() { return !this->_digital; }
