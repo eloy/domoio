@@ -9,15 +9,15 @@ const char *SPECIFICATIONS = "{\"serial\":\"1234\",\"manufacturer\":\"0x01\",\"m
 
 
 TEST(Devices, DeviceConstructor) {
-  domoio::Device device (1, "test device", SPECIFICATIONS, "foo");
+  domoio::NetworkDevice device (1, "test device", SPECIFICATIONS, "foo");
   EXPECT_EQ(device.serial, "1234");
   EXPECT_EQ(device.ports_count(), 4);
 }
 
 
 TEST(Devices, DeviceFind) {
-  domoio::Device *m_device_1 = domoio::factory_device(1, "foo", "password");
-  domoio::Device *m_device_2 = domoio::factory_device(2, "bar", "password");
+  domoio::NetworkDevice *m_device_1 = domoio::factory_network_device(1, "foo", "password");
+  domoio::NetworkDevice *m_device_2 = domoio::factory_network_device(2, "bar", "password");
 
   domoio::Device * device_1 = domoio::device_find(1);
   EXPECT_EQ(device_1->id, 1);

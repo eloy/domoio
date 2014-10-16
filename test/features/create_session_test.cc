@@ -17,7 +17,7 @@ TEST(CreateSession, invalid_device) {
 
 TEST(CreateSession, valid_device) {
   const char *password = "0123456789abcdef";
-  domoio::Device *m_device = domoio::factory_device(1, "foo", password);
+  domoio::NetworkDevice *m_device = domoio::factory_network_device(1, "foo", password);
 
 
   domoio::start_server();

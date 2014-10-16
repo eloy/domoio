@@ -23,6 +23,12 @@ namespace domoio {
       device_disconnected
 
     };
+    // http://www.cmu.edu/iso/governance/guidelines/data-classification.html
+    enum channel {
+      public_channel,
+      private_channel,
+      restricted_channel
+    };
 
     class EventsService : public boost::asio::io_service::service {
     public:
@@ -55,31 +61,40 @@ namespace domoio {
   public:
     Event() {}
 
-    Event(events::type _type) : type(_type) {}
-
-    Event(events::type _type, int _old_value) :
-      type(_type), old_value(_old_value) {
+    Event(events::type _type, events::channel _channel) : type(_type), channel(_channel) {
+      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
     }
 
-    Event(events::type _type, Device*  _device) :
-      type(_type), device(_device) {
+    Event(events::type _type, events::channel _channel, int _old_value) :
+      type(_type), channel(_channel), old_value(_old_value) {
+      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
     }
 
-    Event(events::type _type, int _old_value, int _new_value) :
-      type(_type), old_value(_old_value), new_value(_new_value) {
+    Event(events::type _type, events::channel _channel, Device*  _device) :
+      type(_type), channel(_channel), device(_device) {
+      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
     }
 
-    Event(events::type _type, Device *_device, Port*_port, int _old_value, int _new_value) :
-      type(_type), device(_device), port(_port), old_value(_old_value), new_value(_new_value) {
+    Event(events::type _type, events::channel _channel, int _old_value, int _new_value) :
+      type(_type), channel(_channel), old_value(_old_value), new_value(_new_value) {
+      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+    }
+
+    Event(events::type _type, events::channel _channel, Device *_device, Port*_port, int _old_value, int _new_value) :
+      type(_type), channel(_channel), device(_device), port(_port), old_value(_old_value), new_value(_new_value) {
+      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
     }
 
     std::string to_json();
+    std::string channel_name();
 
     events::type type;
+    events::channel channel;
     Port *port;
     Device *device;
     int old_value;
     int new_value;
+    std::string date;
   };
 
 }

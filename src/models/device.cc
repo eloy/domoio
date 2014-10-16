@@ -1,6 +1,4 @@
 #include "domoio.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 namespace domoio {
 
@@ -15,15 +13,23 @@ namespace domoio {
     int id_idx = PQfnumber(res, "id");
     int label_idx = PQfnumber(res, "label");
     int specs_idx = PQfnumber(res, "specifications");
+    int type_idx = PQfnumber(res, "type");
     int pass_idx = PQfnumber(res, "password");
-
     for(int i=0; i < rows; i++) {
       int id = atoi(PQgetvalue(res, i, id_idx));
       char *label = PQgetvalue(res, i, label_idx);
       char *specifications = PQgetvalue(res, i, specs_idx);
-      char *password = PQgetvalue(res, i, pass_idx);
-      devices[id] = new Device(id, label, specifications, password);
+      char *type = PQgetvalue(res, i, type_idx);
+      if (strcmp(type, "NetworkDevice") == 0) {
+
+        char *password = PQgetvalue(res, i, pass_idx);
+        devices[id] = new NetworkDevice(id, label, specifications, password);
+      }
+      else if (strcmp(type, "VirtualDevice") == 0) {
+        devices[id] = new VirtualDevice(id, label, specifications);
+      }
     }
+
     PQclear(res);
 
     // for (std::map<int, Device*>::iterator it = devices.begin(); it != devices.end(); ++it) {
@@ -37,25 +43,22 @@ namespace domoio {
     return devices[id];
   }
 
+  NetworkDevice * NetworkDevice::find(int id) {
+    Device *d = device_find(id);
+    if (d == NULL || !d->is_network_device()) {
+      return NULL;
+    }
+    return (NetworkDevice*) d;
+  }
+
   void free_devices(void) {
     for (std::map<int, Device*>::iterator it = devices.begin(); it != devices.end(); ++it) {
       delete(it->second);
     }
   }
 
-  Device::Device(int id_, const char *label_, const char *specs, const char *password_)
-    : id(id_), label(label_), password(password_) {
-    this->connected = false;
-    this->parse_specifications(specs);
-  }
 
-  Device::~Device(void) {
-    for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
-      delete(it->second);
-    }
-  }
-
-  void Device::parse_specifications(const char *specs) {
+  void Device::parse_specifications(std::string specs) {
     using boost::property_tree::ptree;
     ptree pt;
 
@@ -93,6 +96,26 @@ namespace domoio {
     return true;
   }
 
+
+  boost::property_tree::ptree Device::to_pt() {
+
+    boost::property_tree::ptree pt;
+
+    pt.put("id", this->id);
+    pt.put("label", this->label);
+    pt.put("description", this->description);
+    pt.put("connected", this->connected);
+    // ...
+
+    boost::property_tree::ptree ports_tree;
+    for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
+      ports_tree.push_back(std::make_pair("", it->second->to_pt()));
+    }
+    pt.add_child("ports", ports_tree);
+    return pt;
+
+  }
+
   bool device_set_port_state(std::string target_url, int value) {
     int device_id;
     int port_id;
@@ -102,6 +125,21 @@ namespace domoio {
     if (device == NULL)  return false;
 
     return device->set_port_state(port_id, value);
+  }
+
+
+  std::string devices_to_json() {
+
+    boost::property_tree::ptree pt, devices_tree;
+
+    for (std::map<int, Device*>::iterator it = devices.begin(); it != devices.end(); ++it) {
+      devices_tree.push_back(std::make_pair("", it->second->to_pt()));
+    }
+    pt.add_child("devices", devices_tree);
+
+    std::stringstream ss;
+    write_json(ss, pt, false);
+    return ss.str();
   }
 
 }

@@ -15,6 +15,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
 #define BOOST_LOG_DYN_LINK
 #include <boost/log/trivial.hpp>
 #include "config.h"
@@ -77,14 +78,14 @@ namespace domoio {
     bool close();
     bool create_session(int);
     bool execute_callback(std::vector<std::string>);
-    Device* get_device() { return this->device; }
+    NetworkDevice* get_device() { return this->device; }
 
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
     std::deque<std::string> message_queue;
 
-    Device *device;
+    NetworkDevice *device;
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;
@@ -135,7 +136,7 @@ namespace domoio {
         broadcasting_events = false;
       }
     }
-    void send_event(Event* event) { this->send("event_data " + event->to_json()); }
+    void send_event(Event*);
 
   private:
     boost::asio::local::stream_protocol::socket socket;

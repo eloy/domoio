@@ -96,7 +96,7 @@ namespace domoio {
     this->socket.close();
 
     // Send event
-    events::send(new Event(events::device_disconnected, this->device));
+    events::send(new Event(events::device_disconnected, events::private_channel, this->device));
 
     return true;
   }
@@ -171,7 +171,7 @@ namespace domoio {
 
 
   bool DeviceConnection::create_session(int device_id) {
-    this->device = device_find(device_id);
+    this->device = NetworkDevice::find(device_id);
     if (!this->device) {
       this->send("406 Not Acceptable");
       return false;
@@ -183,7 +183,7 @@ namespace domoio {
     this->session_started = true;
 
     // Send event
-    events::send(new Event(events::device_connected, this->device));
+    events::send(new Event(events::device_connected, events::private_channel, this->device));
     return true;
   }
 

@@ -109,7 +109,7 @@ namespace domoio {
 
   // FACTORIES
   extern std::map<int, Device*> devices;
-  Device *factory_device(int, const char*, const char*);
+  NetworkDevice *factory_network_device(int, const char*, const char*);
 
 }
 

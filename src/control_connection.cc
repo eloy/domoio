@@ -25,7 +25,7 @@ namespace domoio {
 
   bool ControlConnection::send(std::string msg) {
     boost::asio::async_write(socket,
-                             boost::asio::buffer(msg.c_str(), msg.length() + 1),
+                             boost::asio::buffer(msg.c_str(), msg.length()),
                              boost::bind(&ControlConnection::handle_write, this, boost::asio::placeholders::error)
                              );
     return true;
@@ -35,7 +35,8 @@ namespace domoio {
   void ControlConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (error) { return; }
 
-    this->dispatch_request(&this->data[0]);
+    std::string cmd(&this->data[0], bytes_transferred);
+    this->dispatch_request(cmd);
   }
 
   void ControlConnection::handle_write(const boost::system::error_code& error) {
@@ -46,8 +47,14 @@ namespace domoio {
 
 
   bool ControlConnection::close() {
+    LOG(trace) << "Control Connection Closed";
     this->socket.close();
     return true;
+  }
+
+
+  void ControlConnection::send_event(Event* event) {
+    this->send("event_data " + event->channel_name() + " " + event->to_json());
   }
 
 

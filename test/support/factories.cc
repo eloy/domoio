@@ -7,8 +7,8 @@ namespace domoio {
 
 
 
-  Device * factory_device(int id, const char* name, const char* passwd) {
-    Device * d = new domoio::Device(id, name, SPECIFICATIONS, passwd);
+  NetworkDevice * factory_network_device(int id, const char* name, const char* passwd) {
+    NetworkDevice * d = new domoio::NetworkDevice(id, name, SPECIFICATIONS, passwd);
     devices[id] = d;
     return d;
   }

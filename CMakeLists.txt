@@ -2,7 +2,9 @@ cmake_minimum_required (VERSION 2.8.8)
 project (domoio)
 
 
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -std=gnu++0x -stdlib=libc++" )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic" )
+# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -stdlib=libc++")
+
 set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Location for custm Find*.cmake files
@@ -65,6 +67,7 @@ set(SRC ${SRC}
   ./src/commands/cmd_set
   ./src/commands/cmd_all_ports_state
   ./src/commands/cmd_start_events
+  ./src/commands/cmd_get_devices
 )
 
 

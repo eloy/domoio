@@ -95,9 +95,30 @@ namespace domoio {
       pt.put("type", "unkuwn");
     }
 
+    // Shared fields
+    pt.put("date", this->date);
+    pt.put("channel", this->channel_name());
+
+
     std::stringstream ss;
     write_json(ss, pt);
     return ss.str();
+  }
+
+  std::string Event::channel_name() {
+    switch(this->channel) {
+    case events::private_channel:
+      return "private";
+      break;
+    case events::public_channel:
+      return "public";
+      break;
+    case events::restricted_channel:
+      return "restricted";
+      break;
+    default:
+      return "unkuwn";
+    }
   }
 
 }

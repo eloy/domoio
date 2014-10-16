@@ -2,14 +2,14 @@
 
 TEST(events, send_global_events) {
   domoio::events::start();
-  domoio::events::send(new domoio::Event(domoio::events::port_set));
+  domoio::events::send(new domoio::Event(domoio::events::port_set, domoio::events::private_channel));
   ASSERT_TRUE(domoio::expect_events(1));
   domoio::events::stop();
 }
 
 
 TEST(events, control_receive_events) {
-  domoio::Device *m_device = domoio::factory_device(1, "foo", "0123456789abcdef");
+  domoio::NetworkDevice *m_device = domoio::factory_network_device(1, "foo", "0123456789abcdef");
   domoio::start_server();
 
   boost::asio::io_service io_service_1;
@@ -33,7 +33,7 @@ TEST(events, control_receive_events) {
 
   control_1.read();
 
-  const char* expected = "event_data {\n    \"type\": \"port_set\",\n    \"device_id\": \"1\",\n    \"port_id\": \"1\",\n    \"value\": \"1\",\n    \"old_value\": \"0\"\n}\n";
+  const char* expected = "event_data private {\n    \"type\": \"port_set\",\n    \"device_id\": \"1\",\n    \"port_id\": \"1\",\n    \"value\": \"1\",\n    \"old_value\": \"0\"\n}\n";
   ASSERT_STREQ(control_1.data(), expected);
 
   device_1.close();
