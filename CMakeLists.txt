@@ -72,7 +72,9 @@ set(SRC ${SRC}
 
 
 # JS Engine
-set(SRC ${SRC} ./src/jsengine/engine)
+set(SRC ${SRC}
+  ./src/jsengine/engine
+  )
 
 
 

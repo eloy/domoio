@@ -36,10 +36,6 @@ int test_crypt(void);
 
 namespace domoio {
 
-
-  int run(void);
-
-
   void init_domoio(void);
   void exit_domoio(void);
   /*
