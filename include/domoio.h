@@ -132,7 +132,7 @@ namespace domoio {
         broadcasting_events = false;
       }
     }
-    void send_event(Event*);
+    void send_event(EventPtr);
 
   private:
     boost::asio::local::stream_protocol::socket socket;

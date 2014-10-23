@@ -53,7 +53,8 @@ namespace domoio {
   }
 
 
-  void ControlConnection::send_event(Event* event) {
+  void ControlConnection::send_event(EventPtr event_ptr) {
+    Event *event = event_ptr.get();
     this->send("event_data " + event->channel_name() + " " + event->to_json());
   }
 

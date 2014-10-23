@@ -8,26 +8,31 @@ namespace domoio {
   namespace events {
 
 
+
+
+
     boost::asio::io_service::id EventsService::id;
 
     boost::asio::io_service io_service;
     EventsService events_service(io_service);
     boost::asio::io_service::work work(io_service);
 
-    void EventsService::send(Event * event) {
-      io_service.post(boost::bind(&EventsService::handle, this, event));
-    }
-
-    void EventsService::handle(Event * event) {
-      LOG(trace) << "Event: " << event->type;
-      this->event_signals(event);
-      delete(event);
-    }
-
 
     // Shortcut for sending events
     void send(Event * event) {
-      events_service.send(event);
+      EventPtr event_ptr(event);
+      events_service.send(event_ptr);
+    }
+
+
+
+    // Send the event through the io_service
+    void EventsService::send(EventPtr event_ptr) {
+      io_service.post(boost::bind(&EventsService::handle, this, event_ptr));
+    }
+
+    void EventsService::handle(EventPtr event_ptr) {
+      this->event_signals(event_ptr);
     }
 
     boost::thread_group m_threads;

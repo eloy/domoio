@@ -6,6 +6,7 @@
 namespace domoio {
   typedef boost::signals2::connection signals_connection;
   class Event;
+  typedef boost::shared_ptr<Event> EventPtr;
 
   namespace events {
 
@@ -39,16 +40,16 @@ namespace domoio {
       EventsService(boost::asio::io_service& io_service) : boost::asio::io_service::service(io_service) {}
       ~EventsService() {}
       void shutdown_service() {}
-      void send(Event*);
+      void send(EventPtr);
 
-      void handle(Event*);
+      void handle(EventPtr);
 
       template<typename CompletionHandler> signals_connection add_listener(CompletionHandler handler) {
         return this->event_signals.connect(handler);
       }
 
     private:
-      boost::signals2::signal<void(Event*)> event_signals;
+      boost::signals2::signal<void(EventPtr)> event_signals;
     };
 
     extern EventsService events_service;

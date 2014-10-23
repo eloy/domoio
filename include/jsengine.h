@@ -4,8 +4,8 @@
 
 namespace domoio {
   namespace js {
-    class JsHttpRequestProcessor;
-    typedef boost::shared_ptr<JsHttpRequestProcessor> JsHttpRequestProcessorPtr;
+    class JsProcessor;
+    typedef boost::shared_ptr<JsProcessor> JsProcessorPtr;
 
 
   }

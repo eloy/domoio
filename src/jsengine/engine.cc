@@ -13,19 +13,19 @@ namespace domoio {
     /**
      * An http request processor that is scriptable using JavaScript.
      */
-    class JsHttpRequestProcessor {
+    class JsProcessor {
     public:
       // Creates a new processor that processes requests by invoking the
       // Process function of the JavaScript script given as an argument.
-      JsHttpRequestProcessor(Isolate* isolate, Handle<String> script)
+      JsProcessor(Isolate* isolate, Handle<String> script)
         : isolate_(isolate), script_(script) { }
-      virtual ~JsHttpRequestProcessor();
+      virtual ~JsProcessor();
 
       virtual bool Initialize(map<string, string>* opts,
                               map<string, string>* output);
       // virtual bool Process(HttpRequest* req);
 
-      virtual void send_event(Event*);
+      virtual void send_event(EventPtr);
     private:
 
       Isolate* GetIsolate() { return isolate_; }
@@ -112,7 +112,7 @@ namespace domoio {
 
 
     // Execute the script and fetch the Process method.
-    bool JsHttpRequestProcessor::Initialize(map<string, string>* opts, map<string, string>* output) {
+    bool JsProcessor::Initialize(map<string, string>* opts, map<string, string>* output) {
 
       // Create a handle scope to hold the temporary references.
       HandleScope handle_scope(GetIsolate());
@@ -165,7 +165,7 @@ namespace domoio {
       return true;
     }
 
-    bool JsHttpRequestProcessor::ExecuteScript(Handle<String> script) {
+    bool JsProcessor::ExecuteScript(Handle<String> script) {
       HandleScope handle_scope(GetIsolate());
 
       // We're just about to compile the script; set up an error handler to
@@ -203,7 +203,7 @@ namespace domoio {
 
     // Utility function that wraps a C++ http request object in a
     // JavaScript object.
-    Handle<Object> JsHttpRequestProcessor::WrapMap(map<string, string>* obj) {
+    Handle<Object> JsProcessor::WrapMap(map<string, string>* obj) {
       // Handle scope for temporary handles.
       EscapableHandleScope handle_scope(GetIsolate());
 
@@ -235,14 +235,14 @@ namespace domoio {
 
     // Utility function that extracts the C++ map pointer from a wrapper
     // object.
-    map<string, string>* JsHttpRequestProcessor::UnwrapMap(Handle<Object> obj) {
+    map<string, string>* JsProcessor::UnwrapMap(Handle<Object> obj) {
       Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
       void* ptr = field->Value();
       return static_cast<map<string, string>*>(ptr);
     }
 
 
-    Handle<ObjectTemplate> JsHttpRequestProcessor::MakeMapTemplate(Isolate* isolate) {
+    Handle<ObjectTemplate> JsProcessor::MakeMapTemplate(Isolate* isolate) {
 
       EscapableHandleScope handle_scope(isolate);
 
@@ -256,7 +256,7 @@ namespace domoio {
 
 
 
-    bool JsHttpRequestProcessor::InstallMaps(map<string, string>* opts,map<string, string>* output) {
+    bool JsProcessor::InstallMaps(map<string, string>* opts,map<string, string>* output) {
 
       HandleScope handle_scope(GetIsolate());
 
@@ -277,7 +277,7 @@ namespace domoio {
     }
 
 
-    void JsHttpRequestProcessor::MapGet(Local<String> name, const PropertyCallbackInfo<Value>& info) {
+    void JsProcessor::MapGet(Local<String> name, const PropertyCallbackInfo<Value>& info) {
 
       // Fetch the map wrapped by this object.
       map<string, string>* obj = UnwrapMap(info.Holder());
@@ -298,7 +298,7 @@ namespace domoio {
 
     }
 
-    void JsHttpRequestProcessor::MapSet(Local<String> name, Local<Value> value_obj, const PropertyCallbackInfo<Value>& info) {
+    void JsProcessor::MapSet(Local<String> name, Local<Value> value_obj, const PropertyCallbackInfo<Value>& info) {
 
 
       // Fetch the map wrapped by this object.
@@ -320,7 +320,7 @@ namespace domoio {
 
 
 
-    JsHttpRequestProcessor::~JsHttpRequestProcessor() {
+    JsProcessor::~JsProcessor() {
       // Dispose the persistent handles.  When noone else has any
       // references to the objects stored in the handles they will be
       // automatically reclaimed.
@@ -329,8 +329,8 @@ namespace domoio {
     }
 
 
-    // Persistent<ObjectTemplate> JsHttpRequestProcessor::request_template_;
-    Persistent<ObjectTemplate> JsHttpRequestProcessor::map_template_;
+    // Persistent<ObjectTemplate> JsProcessor::request_template_;
+    Persistent<ObjectTemplate> JsProcessor::map_template_;
 
 
 
@@ -393,21 +393,24 @@ namespace domoio {
 
 
 
-    void JsHttpRequestProcessor::send_event(Event* event) {
+    void JsProcessor::send_event(EventPtr event_ptr) {
+      Event *event = event_ptr.get();
       LOG(trace) << "Ready to execute JS thread: " << boost::this_thread::get_id();
-      // HandleScope handle_scope(GetIsolate());
+      v8::Locker locker(GetIsolate());
+      HandleScope handle_scope(GetIsolate());
 
       // We're just about to compile the script; set up an error handler to
       // catch any exceptions the script might throw.
 
 
       v8::Local<v8::Context> context = v8::Local<v8::Context>::New(GetIsolate(), context_);
-      Context::Scope context_scope(context);
+      // Context::Scope context_scope(context);
 
       TryCatch try_catch;
       v8::Local<v8::Function> process = v8::Local<v8::Function>::New(GetIsolate(), process_);
 
       Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), event->to_json().c_str())};
+      // Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), "pollo")};
       Handle<Value> result = process->Call(context->Global(), 2, argv);
 
       if (result.IsEmpty()) {
@@ -417,6 +420,7 @@ namespace domoio {
         std::cout << *error;
         // Running the script failed; bail out.
       }
+      v8::Unlocker unlocker(GetIsolate());
     }
 
 
@@ -436,15 +440,15 @@ namespace domoio {
       ScriptService(boost::asio::io_service&);
       ~ScriptService() {}
       void shutdown_service() {}
-      void send(Event*);
+      void send(EventPtr);
 
-      void handle(Event*);
+      void handle(EventPtr);
 
       void init_jsengine();
 
       // Events
       signals_connection events_connection;
-      JsHttpRequestProcessor *processor;
+      JsProcessor *processor;
     };
 
 
@@ -471,7 +475,7 @@ namespace domoio {
     //     fprintf(stderr, "Error reading '%s'.\n", file.c_str());
     //     return;
     //   }
-    //   this->processor = new JsHttpRequestProcessor(isolate, source);
+    //   this->processor = new JsProcessor(isolate, source);
 
 
     //   if (!processor->Initialize(&options, &output)) {
@@ -484,26 +488,17 @@ namespace domoio {
 
 
 
-    void ScriptService::send(Event * event) {
-      io_service.post(boost::bind(&ScriptService::handle, this, event));
+    void ScriptService::send(EventPtr event_ptr) {
+      io_service.post(boost::bind(&ScriptService::handle, this, event_ptr));
     }
 
-    void ScriptService::handle(Event * event) {
-      LOG(trace) << "JS event " << event->type;
-      processor->send_event(event);
+    void ScriptService::handle(EventPtr event_ptr) {
+      processor->send_event(event_ptr);
     }
-
-
-    // Shortcut for sending events
-    // void send(Event * event) {
-    //   events_service.send(event);
-    // }
-
-    boost::thread_group m_threads;
 
 
     // Start the js engine thread
-    void run_io_service() {
+    static void run_io_service() {
       LOG(trace) << "Starting JS engine";
 
 
@@ -520,7 +515,7 @@ namespace domoio {
         fprintf(stderr, "Error reading '%s'.\n", file.c_str());
         return;
       }
-      events_service.processor = new JsHttpRequestProcessor(isolate, source);
+      events_service.processor = new JsProcessor(isolate, source);
 
       map<string, string> options;
       map<string, string> output;
@@ -546,8 +541,7 @@ namespace domoio {
           io_service.reset();
         }
 
-        // // Start server
-         m_threads.create_thread(run_io_service);
+        boost::thread thread(run_io_service);
         return true;
       }
       catch (std::exception& e) {
@@ -559,7 +553,7 @@ namespace domoio {
 
     bool stop(void) {
       io_service.stop();
-      m_threads.join_all();
+      // m_threads.join_all();
       io_service.reset();
       return true;
     }
