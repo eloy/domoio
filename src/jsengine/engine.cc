@@ -84,6 +84,38 @@ namespace domoio {
       return string(*utf8_value);
     }
 
+    bool file_exists (const std::string &filename) {
+      struct stat buffer;
+      return (stat (filename.c_str(), &buffer) == 0);
+    }
+
+    std::string read_file(const std::string &filename) {
+      FILE* file = fopen(filename.c_str(), "rb");
+      if (file == NULL) return NULL;
+
+      fseek(file, 0, SEEK_END);
+      int size = ftell(file);
+      rewind(file);
+
+      char* chars = new char[size + 1];
+      chars[size] = '\0';
+      for (int i = 0; i < size;) {
+        int read = static_cast<int>(fread(&chars[i], 1, size - i, file));
+        i += read;
+      }
+      fclose(file);
+      std::string result(chars, size);
+      delete[] chars;
+      return result;
+    }
+
+    // Reads a file into a v8 string.
+    Handle<String> ReadFile(Isolate* isolate, const string &name) {
+      std::string content = read_file(name);
+      Handle<String> result = String::NewFromUtf8(isolate, content.c_str(), String::kNormalString, content.length());
+      return result;
+    }
+
 
     /**
      * Callbacks
@@ -109,7 +141,40 @@ namespace domoio {
       LOG(trace) << "Device id: " << *device_id << "\n";
     }
 
+    static void requireCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+      if (args.Length() < 1) return;
 
+      HandleScope scope(args.GetIsolate());
+      std::string filename(ObjectToString(args[0]) + ".js");
+      TryCatch try_catch;
+
+      if(file_exists(filename) == false) {
+        args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(args.GetIsolate(), "File not found"));
+        return;
+      }
+
+      std::string content("(function(){" + read_file(filename) + "}).call(this);");
+      Handle<String> script = String::NewFromUtf8(args.GetIsolate(), content.c_str(), String::kNormalString, content.length());
+
+      // Compile the script and check for errors.
+      Handle<Script> compiled_script = Script::Compile(script);
+      if (compiled_script.IsEmpty()) {
+        String::Utf8Value error(try_catch.Exception());
+        // Log(*error);
+        LOG(fatal) << *error;
+        // The script failed to compile; bail out.
+        return;
+      }
+
+      // Run the script!
+      Handle<Value> result = compiled_script->Run();
+      if (result.IsEmpty()) {
+        String::Utf8Value error(try_catch.Exception());
+        LOG(fatal) << *error;
+        return;
+      }
+      args.GetReturnValue().Set(result);
+    }
 
     // Execute the script and fetch the Process method.
     bool JsProcessor::Initialize(map<string, string>* opts, map<string, string>* output) {
@@ -121,9 +186,8 @@ namespace domoio {
       // built-in global functions.
       Handle<ObjectTemplate> global = ObjectTemplate::New(GetIsolate());
       global->Set(String::NewFromUtf8(GetIsolate(), "log"), FunctionTemplate::New(GetIsolate(), LogCallback));
-
       global->Set(String::NewFromUtf8(GetIsolate(), "addEvent"), FunctionTemplate::New(GetIsolate(), add_event));
-
+      global->Set(String::NewFromUtf8(GetIsolate(), "require"), FunctionTemplate::New(GetIsolate(), requireCallback));
 
       // Each processor gets its own context so different processors don't
       // affect each other. Context::New returns a persistent handle which
@@ -332,30 +396,6 @@ namespace domoio {
     // Persistent<ObjectTemplate> JsProcessor::request_template_;
     Persistent<ObjectTemplate> JsProcessor::map_template_;
 
-
-
-
-    // Reads a file into a v8 string.
-    Handle<String> ReadFile(Isolate* isolate, const string& name) {
-      FILE* file = fopen(name.c_str(), "rb");
-      if (file == NULL) return Handle<String>();
-
-      fseek(file, 0, SEEK_END);
-      int size = ftell(file);
-      rewind(file);
-
-      char* chars = new char[size + 1];
-      chars[size] = '\0';
-      for (int i = 0; i < size;) {
-        int read = static_cast<int>(fread(&chars[i], 1, size - i, file));
-        i += read;
-      }
-      fclose(file);
-      Handle<String> result =
-        String::NewFromUtf8(isolate, chars, String::kNormalString, size);
-      delete[] chars;
-      return result;
-    }
 
 
     //
