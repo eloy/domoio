@@ -8,7 +8,7 @@ namespace domoio {
 
   void ControlConnection::start(){
     LOG(trace) << "Started Control Connection";
-    this->send("Hey, protocol=1.0\n");
+    this->send("Hey, protocol=1.0");
     this->read();
   }
 
@@ -24,8 +24,9 @@ namespace domoio {
 
 
   bool ControlConnection::send(std::string msg) {
+    std::string formated_msg(msg + "\n");
     boost::asio::async_write(socket,
-                             boost::asio::buffer(msg.c_str(), msg.length()),
+                             boost::asio::buffer(formated_msg.c_str(), formated_msg.length()),
                              boost::bind(&ControlConnection::handle_write, this, boost::asio::placeholders::error)
                              );
     return true;
