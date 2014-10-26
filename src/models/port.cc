@@ -14,9 +14,18 @@ namespace domoio {
 
     pt.put("id", this->_id);
     pt.put("name", this->_name);
-    pt.put("value", this->value());
     pt.put("digital", this->digital());
     pt.put("output", this->output());
+
+    if (this->digital()) {
+      if (this->value() > 0) {
+        pt.put("value", true);
+      } else {
+        pt.put("value", false);
+      }
+    } else {
+      pt.put("value", this->value());
+    }
 
     return pt;
   }

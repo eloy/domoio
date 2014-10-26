@@ -80,8 +80,28 @@ namespace domoio {
       pt.put("type", "port_set");
       pt.put("device_id", this->device->id);
       pt.put("port_id", this->port->id());
-      pt.put("value", this->new_value);
-      pt.put("old_value", this->old_value);
+
+      // If port is digital set to true or false
+      if (this->port->digital()) {
+        // new valud
+        if (this->new_value > 0) {
+          pt.put("value", true);
+        } else {
+          pt.put("value", false);
+        }
+        // old value
+        if (this->old_value > 0) {
+          pt.put("old_value", true);
+        } else {
+          pt.put("old_value", false);
+        }
+      }
+      // Otherwhise, just print the value
+      else {
+        pt.put("value", this->new_value);
+        pt.put("old_value", this->old_value);
+      }
+
       break;
 
     // Device Connected
@@ -106,7 +126,7 @@ namespace domoio {
 
 
     std::stringstream ss;
-    write_json(ss, pt);
+    write_json(ss, pt, false);
     return ss.str();
   }
 
