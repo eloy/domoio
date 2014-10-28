@@ -1,4 +1,3 @@
-#include <v8.h>
 #include "domoio.h"
 #include "jsengine.h"
 #include <map>
@@ -11,14 +10,14 @@ namespace domoio {
   namespace js {
 
     /**
-     * An http request processor that is scriptable using JavaScript.
+     * The js engine
      */
     class JsProcessor {
     public:
       // Creates a new processor that processes requests by invoking the
       // Process function of the JavaScript script given as an argument.
-      JsProcessor(Isolate* isolate, Handle<String> script)
-        : isolate_(isolate), script_(script) { }
+      JsProcessor(Isolate* isolate)
+        : isolate_(isolate) { }
       virtual ~JsProcessor();
 
       virtual bool Initialize(map<string, string>* opts,
@@ -31,7 +30,6 @@ namespace domoio {
       Isolate* GetIsolate() { return isolate_; }
 
       Isolate* isolate_;
-      Handle<String> script_;
       Persistent<Context> context_;
       // Persistent<Function> process_;
       static Persistent<ObjectTemplate> request_template_;
@@ -62,119 +60,27 @@ namespace domoio {
 
       static void MapSet(Local<String> name, Local<Value> value, const PropertyCallbackInfo<Value>& info);
 
-
-
-
+      // Event triggered for sending messages to user coe
+      Persistent<Function> trigger_event_process;
     };
-
-
-
-    //----------------------------------------------------------------
-
-
-
-    Persistent<Function> process_;
 
 
 
     // Convert a JavaScript string to a std::string.  To not bother too
     // much with string encodings we just use ascii.
-    string ObjectToString(Local<Value> value) {
+    string object_to_string(Local<Value> value) {
       String::Utf8Value utf8_value(value);
       return string(*utf8_value);
     }
 
-    bool file_exists (const std::string &filename) {
-      struct stat buffer;
-      return (stat (filename.c_str(), &buffer) == 0);
-    }
-
-    std::string read_file(const std::string &filename) {
-      FILE* file = fopen(filename.c_str(), "rb");
-      if (file == NULL) return NULL;
-
-      fseek(file, 0, SEEK_END);
-      int size = ftell(file);
-      rewind(file);
-
-      char* chars = new char[size + 1];
-      chars[size] = '\0';
-      for (int i = 0; i < size;) {
-        int read = static_cast<int>(fread(&chars[i], 1, size - i, file));
-        i += read;
-      }
-      fclose(file);
-      std::string result(chars, size);
-      delete[] chars;
-      return result;
-    }
 
     // Reads a file into a v8 string.
-    Handle<String> ReadFile(Isolate* isolate, const string &name) {
-      std::string content = read_file(name);
+    Handle<String> read_script(Isolate* isolate, const string &name) {
+      std::string content = helpers::read_file(name);
       Handle<String> result = String::NewFromUtf8(isolate, content.c_str(), String::kNormalString, content.length());
       return result;
     }
 
-
-    /**
-     * Callbacks
-     */
-    static void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
-      if (args.Length() < 1) return;
-      HandleScope scope(args.GetIsolate());
-      Handle<Value> arg = args[0];
-      String::Utf8Value value(arg);
-      LOG(info) << "JSENGINE: " << *value << "\n";
-    }
-
-
-    static void add_event(const v8::FunctionCallbackInfo<v8::Value>& args) {
-      if (args.Length() < 2) return;
-      HandleScope scope(args.GetIsolate());
-      String::Utf8Value device_id(args[0]);
-      Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(args[1]);
-      // Store the function in a Persistent handle, since we also want
-      // that to remain after this call returns
-      process_.Reset(args.GetIsolate(), func);
-
-      LOG(trace) << "Device id: " << *device_id << "\n";
-    }
-
-    static void requireCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
-      if (args.Length() < 1) return;
-
-      HandleScope scope(args.GetIsolate());
-      std::string filename(ObjectToString(args[0]) + ".js");
-      TryCatch try_catch;
-
-      if(file_exists(filename) == false) {
-        args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(args.GetIsolate(), "File not found"));
-        return;
-      }
-
-      std::string content("(function(){" + read_file(filename) + "}).call(this);");
-      Handle<String> script = String::NewFromUtf8(args.GetIsolate(), content.c_str(), String::kNormalString, content.length());
-
-      // Compile the script and check for errors.
-      Handle<Script> compiled_script = Script::Compile(script);
-      if (compiled_script.IsEmpty()) {
-        String::Utf8Value error(try_catch.Exception());
-        // Log(*error);
-        LOG(fatal) << *error;
-        // The script failed to compile; bail out.
-        return;
-      }
-
-      // Run the script!
-      Handle<Value> result = compiled_script->Run();
-      if (result.IsEmpty()) {
-        String::Utf8Value error(try_catch.Exception());
-        LOG(fatal) << *error;
-        return;
-      }
-      args.GetReturnValue().Set(result);
-    }
 
     // Execute the script and fetch the Process method.
     bool JsProcessor::Initialize(map<string, string>* opts, map<string, string>* output) {
@@ -185,9 +91,10 @@ namespace domoio {
       // Create a template for the global object where we set the
       // built-in global functions.
       Handle<ObjectTemplate> global = ObjectTemplate::New(GetIsolate());
-      global->Set(String::NewFromUtf8(GetIsolate(), "log"), FunctionTemplate::New(GetIsolate(), LogCallback));
-      global->Set(String::NewFromUtf8(GetIsolate(), "addEvent"), FunctionTemplate::New(GetIsolate(), add_event));
-      global->Set(String::NewFromUtf8(GetIsolate(), "require"), FunctionTemplate::New(GetIsolate(), requireCallback));
+      global->Set(String::NewFromUtf8(GetIsolate(), "__log"), FunctionTemplate::New(GetIsolate(), log_callback));
+      global->Set(String::NewFromUtf8(GetIsolate(), "__read_file"), FunctionTemplate::New(GetIsolate(), read_file_callback));
+      global->Set(String::NewFromUtf8(GetIsolate(), "__file_exists"), FunctionTemplate::New(GetIsolate(), file_exists_callback));
+
 
       // Each processor gets its own context so different processors don't
       // affect each other. Context::New returns a persistent handle which
@@ -205,25 +112,34 @@ namespace domoio {
       if (!InstallMaps(opts, output))
         return false;
 
+
+      // Run system script
+      context->Global()->Set(String::NewFromUtf8(GetIsolate(), "__DOMOIO_CORE_ROOT"), String::NewFromUtf8(GetIsolate(), conf_opt::js_system_path.c_str()));
+      context->Global()->Set(String::NewFromUtf8(GetIsolate(), "__DOMOIO_USER_ROOT"), String::NewFromUtf8(GetIsolate(), conf_opt::js_user_path.c_str()));
+      std::string system_application_script_path = conf_opt::js_system_path + "/application.js";
+      Handle<String> script = read_script(GetIsolate(), system_application_script_path);
+
+      if (script.IsEmpty()) {
+        LOG(fatal) << "Error reading " << system_application_script_path;
+        return false;
+      }
+
       // Compile and run the script
-      if (!ExecuteScript(script_))
+      if (!ExecuteScript(script))
         return false;
 
       // The script compiled and ran correctly.  Now we fetch out the
       // Process function from the global object.
-      // Handle<String> process_name = String::NewFromUtf8(GetIsolate(), "Process");
-      // Handle<Value> process_val = context->Global()->Get(process_name);
+      Handle<String> process_name = String::NewFromUtf8(GetIsolate(), "__emit_events");
+      Handle<Value> process_val = context->Global()->Get(process_name);
 
-      // // If there is no Process function, or if it is not a function,
-      // // bail out
-      // if (!process_val->IsFunction()) return false;
+      if (!process_val->IsFunction()) return false;
 
-      // // It is a function; cast it to a Function
-      // Handle<Function> process_fun = Handle<Function>::Cast(process_val);
+      Handle<Function> process_fun = Handle<Function>::Cast(process_val);
 
       // // Store the function in a Persistent handle, since we also want
       // // that to remain after this call returns
-      // process_.Reset(GetIsolate(), process_fun);
+      trigger_event_process.Reset(GetIsolate(), process_fun);
 
       // All done; all went well
       return true;
@@ -235,14 +151,11 @@ namespace domoio {
       // We're just about to compile the script; set up an error handler to
       // catch any exceptions the script might throw.
       TryCatch try_catch;
-
       // Compile the script and check for errors.
       Handle<Script> compiled_script = Script::Compile(script);
       if (compiled_script.IsEmpty()) {
         String::Utf8Value error(try_catch.Exception());
-        // Log(*error);
-        std::cout << *error;
-        // The script failed to compile; bail out.
+        LOG(fatal) << *error;
         return false;
       }
 
@@ -250,10 +163,8 @@ namespace domoio {
       Handle<Value> result = compiled_script->Run();
       if (result.IsEmpty()) {
         // The TryCatch above is still in effect and will have caught the error.
-        String::Utf8Value error(try_catch.Exception());
-        // Log(*error);
-        std::cout << *error;
-        // Running the script failed; bail out.
+        String::Utf8Value stack_trace(try_catch.StackTrace());
+        LOG(fatal) << *stack_trace;
         return false;
       }
       return true;
@@ -347,7 +258,7 @@ namespace domoio {
       map<string, string>* obj = UnwrapMap(info.Holder());
 
       // Convert the JavaScript string to a std::string.
-      string key = ObjectToString(name);
+      string key = object_to_string(name);
 
       // Look up the value if it exists using the standard STL ideom.
       map<string, string>::iterator iter = obj->find(key);
@@ -369,8 +280,8 @@ namespace domoio {
       map<string, string>* obj = UnwrapMap(info.Holder());
 
       // Convert the key and value to std::strings.
-      string key = ObjectToString(name);
-      string value = ObjectToString(value_obj);
+      string key = object_to_string(name);
+      string value = object_to_string(value_obj);
 
       // Update the map.
       (*obj)[key] = value;
@@ -389,47 +300,12 @@ namespace domoio {
       // references to the objects stored in the handles they will be
       // automatically reclaimed.
       context_.Reset();
-      process_.Reset();
+      trigger_event_process.Reset();
     }
 
 
     // Persistent<ObjectTemplate> JsProcessor::request_template_;
     Persistent<ObjectTemplate> JsProcessor::map_template_;
-
-
-
-    //
-    // void run_callback(Isolate *isolate) {
-
-    //   // Create a handle scope to hold the temporary references.
-    //   // HandleScope handle_scope(isolate);
-
-    //   // Create a template for the global object where we set the
-    //   // built-in global functions.
-    //   Handle<ObjectTemplate> global = ObjectTemplate::New(isolate);
-    //   global->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
-
-    //   global->Set(String::NewFromUtf8(isolate, "addEvent"), FunctionTemplate::New(isolate, add_event));
-
-
-    //   // Each processor gets its own context so different processors don't
-    //   // affect each other. Context::New returns a persistent handle which
-    //   // is what we need for the reference to remain after we return from
-    //   // this method. That persistent handle has to be disposed in the
-    //   // destructor.
-    //   v8::Handle<v8::Context> context = Context::New(isolate, NULL, global);
-
-    //   // Enter the new context so all the following operations take place
-    //   // within it.
-    //   Context::Scope context_scope(context);
-
-    //   v8::Local<v8::Function> process = v8::Local<v8::Function>::New(isolate, process_);
-
-    //   Handle<Value> argv[2] = {String::NewFromUtf8(isolate, "event_type"), String::NewFromUtf8(isolate, "event_data")};
-    //   Handle<Value> result = process->Call(context->Global(), 2, argv);
-
-    // }
-
 
 
 
@@ -447,7 +323,7 @@ namespace domoio {
       // Context::Scope context_scope(context);
 
       TryCatch try_catch;
-      v8::Local<v8::Function> process = v8::Local<v8::Function>::New(GetIsolate(), process_);
+      v8::Local<v8::Function> process = v8::Local<v8::Function>::New(GetIsolate(), trigger_event_process);
 
       Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), event->to_json().c_str())};
       // Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), "pollo")};
@@ -501,32 +377,6 @@ namespace domoio {
     ScriptService::ScriptService(boost::asio::io_service& io_service) : boost::asio::io_service::service(io_service) {
     }
 
-    // void ScriptService::init_jsengine() {
-    //   LOG(trace) << "Init jsengine thread: " << boost::this_thread::get_id();
-    //   V8::InitializeICU();
-    //   isolate = Isolate::New();
-    //   // v8::Locker locker(isolate);
-    //   Isolate::Scope isolate_scope(isolate);
-    //   HandleScope scope(isolate);
-
-    //   string file("test.js");
-    //   Handle<String> source = ReadFile(isolate, file);
-    //   if (source.IsEmpty()) {
-    //     fprintf(stderr, "Error reading '%s'.\n", file.c_str());
-    //     return;
-    //   }
-    //   this->processor = new JsProcessor(isolate, source);
-
-
-    //   if (!processor->Initialize(&options, &output)) {
-    //     fprintf(stderr, "Error initializing processor.\n");
-    //     return;
-    //   }
-
-    //   this->events_connection = domoio::events::add_listener(boost::bind(&ScriptService::send, this, _1));
-    // }
-
-
 
     void ScriptService::send(EventPtr event_ptr) {
       io_service.post(boost::bind(&ScriptService::handle, this, event_ptr));
@@ -549,19 +399,13 @@ namespace domoio {
       Isolate::Scope isolate_scope(isolate);
       HandleScope scope(isolate);
 
-      string file("test.js");
-      Handle<String> source = ReadFile(isolate, file);
-      if (source.IsEmpty()) {
-        fprintf(stderr, "Error reading '%s'.\n", file.c_str());
-        return;
-      }
-      events_service.processor = new JsProcessor(isolate, source);
+      events_service.processor = new JsProcessor(isolate);
 
       map<string, string> options;
       map<string, string> output;
 
       if (!events_service.processor->Initialize(&options, &output)) {
-        fprintf(stderr, "Error initializing processor.\n");
+        LOG(fatal) << "Error initializing JS engine";
         return;
       }
 

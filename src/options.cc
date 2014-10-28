@@ -69,6 +69,9 @@ namespace domoio {
     std::string db_user;
     std::string db_password;
     std::string db_host;
+
+    std::string js_system_path;
+    std::string js_user_path;
   }
 
 
@@ -86,6 +89,8 @@ namespace domoio {
       ("db_name", po::value<string>(&conf_opt::db_name), "Database Name")
       ("db_user", po::value<string>(&conf_opt::db_user), "Database User")
       ("db_password", po::value<string>(&conf_opt::db_password), "Database Password")
+      ("js_system_path", po::value<string>(&conf_opt::js_system_path), "JS System Path")
+      ("js_user_path", po::value<string>(&conf_opt::js_user_path), "JS User Path")
       ;
   }
 

@@ -16,6 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/filesystem.hpp>
 #define BOOST_LOG_DYN_LINK
 #include <boost/log/trivial.hpp>
 #include "config.h"
