@@ -8,26 +8,31 @@ namespace domoio {
   namespace events {
 
 
+
+
+
     boost::asio::io_service::id EventsService::id;
 
     boost::asio::io_service io_service;
     EventsService events_service(io_service);
     boost::asio::io_service::work work(io_service);
 
-    void EventsService::send(Event * event) {
-      io_service.post(boost::bind(&EventsService::handle, this, event));
-    }
-
-    void EventsService::handle(Event * event) {
-      LOG(trace) << "Event: " << event->type;
-      this->event_signals(event);
-      delete(event);
-    }
-
 
     // Shortcut for sending events
     void send(Event * event) {
-      events_service.send(event);
+      EventPtr event_ptr(event);
+      events_service.send(event_ptr);
+    }
+
+
+
+    // Send the event through the io_service
+    void EventsService::send(EventPtr event_ptr) {
+      io_service.post(boost::bind(&EventsService::handle, this, event_ptr));
+    }
+
+    void EventsService::handle(EventPtr event_ptr) {
+      this->event_signals(event_ptr);
     }
 
     boost::thread_group m_threads;
@@ -75,8 +80,28 @@ namespace domoio {
       pt.put("type", "port_set");
       pt.put("device_id", this->device->id);
       pt.put("port_id", this->port->id());
-      pt.put("value", this->new_value);
-      pt.put("old_value", this->old_value);
+
+      // If port is digital set to true or false
+      if (this->port->digital()) {
+        // new valud
+        if (this->new_value > 0) {
+          pt.put("value", true);
+        } else {
+          pt.put("value", false);
+        }
+        // old value
+        if (this->old_value > 0) {
+          pt.put("old_value", true);
+        } else {
+          pt.put("old_value", false);
+        }
+      }
+      // Otherwhise, just print the value
+      else {
+        pt.put("value", this->new_value);
+        pt.put("old_value", this->old_value);
+      }
+
       break;
 
     // Device Connected
@@ -101,7 +126,7 @@ namespace domoio {
 
 
     std::stringstream ss;
-    write_json(ss, pt);
+    write_json(ss, pt, false);
     return ss.str();
   }
 

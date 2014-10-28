@@ -4,7 +4,7 @@
 namespace domoio {
   int events_counter;
 
-  void callback(domoio::Event* event) {
+  void callback(domoio::EventPtr event_ptr) {
     events_counter++;
   }
 

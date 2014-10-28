@@ -48,6 +48,7 @@ set(SRC ${SRC}
   ./src/control_connection
   ./src/events
   ./src/database
+  ./src/helpers
   ./src/crypto/crypto
   ./src/crypto/block_cipher
   ./src/crypto/aes
@@ -72,7 +73,12 @@ set(SRC ${SRC}
 
 
 # JS Engine
-set(SRC ${SRC} ./src/jsengine/engine)
+set(SRC ${SRC}
+  ./src/jsengine/engine
+  ./src/jsengine/log_callback
+  ./src/jsengine/read_file_callback
+  ./src/jsengine/file_exists_callback
+  )
 
 
 

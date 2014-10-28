@@ -1,9 +1,6 @@
 #include "domoio.h"
 
 namespace domoio {
-  // Connection::Connection() {
-  // }
-
   // Register Server Commands
   std::map<std::string, DeviceCommandDef*> device_commands;
 

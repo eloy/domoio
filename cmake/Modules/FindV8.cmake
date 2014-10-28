@@ -13,18 +13,18 @@ set(V8_LIBRARY_NAMES )
 IF(WIN32)
     # FIND_PATH( V8_INCLUDE_PATH
 		# $ENV{PROGRAMFILES}/V8/include
-		# ${V8_ROOT_DIR}/include
+		# ${V8_LIB_DIR}/include
 		# DOC "The directory where V8/glfw3.h resides")
 
     # FIND_LIBRARY( V8_LIBRARY
     #     NAMES glfw3 V8
     #     PATHS
     #     $ENV{PROGRAMFILES}/V8/lib
-		# ${V8_ROOT_DIR}/lib
+		# ${V8_LIB_DIR}/lib
     #     DOC "The V8 library")
 ELSE(WIN32)
   FIND_PATH( V8_INCLUDE_PATH ${V8_INCLUDE_NAMES}
-		${V8_ROOT_DIR}/include
+		${V8_INCLUDE_DIR}
 		/usr/include
 		/usr/local/include
 		/sw/include
@@ -35,7 +35,8 @@ ELSE(WIN32)
 	FIND_LIBRARY( V8_LIBRARY
         NAMES libv8_base.a libv8_base.x64.a
 		PATHS
-		${V8_ROOT_DIR}/lib
+    ${V8_LIB_DIR}/
+		${V8_LIB_DIR}/lib
 		/usr/lib64
 		/usr/lib
 		/usr/local/lib64
@@ -47,7 +48,8 @@ ELSE(WIN32)
 	FIND_LIBRARY( V8_SNAPSHOT_LIBRARY
         NAMES libv8_snapshot.a libv8_snapshot.x64.a
 		PATHS
-		${V8_ROOT_DIR}/lib
+		${V8_LIB_DIR}/
+    ${V8_LIB_DIR}/lib
 		/usr/lib64
 		/usr/lib
 		/usr/local/lib64

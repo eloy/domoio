@@ -91,8 +91,6 @@ namespace domoio {
     char buffer[CLIENT_BUFFER_MAX_LENGTH];
     snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", port_id, value);
     this->network_signals(&buffer[0]);
-
-    // TODO send change event
     return true;
   }
 
@@ -123,7 +121,7 @@ namespace domoio {
     sscanf(target_url.c_str(), "%d::%d", &device_id, &port_id);
     Device *device = device_find(device_id);
     if (device == NULL)  return false;
-
+    if (device->is_connected() == false) return false;
     return device->set_port_state(port_id, value);
   }
 

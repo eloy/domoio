@@ -24,6 +24,10 @@ namespace domoio {
     extern std::string db_user;
     extern std::string db_password;
     extern std::string db_host;
+
+    // JS
+    extern std::string js_system_path;
+    extern std::string js_user_path;
   }
   // Config
   extern boost::program_options::variables_map conf;

@@ -16,6 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/filesystem.hpp>
 #define BOOST_LOG_DYN_LINK
 #include <boost/log/trivial.hpp>
 #include "config.h"
@@ -35,10 +36,6 @@ int test_crypt(void);
 
 
 namespace domoio {
-
-
-  int run(void);
-
 
   void init_domoio(void);
   void exit_domoio(void);
@@ -136,7 +133,7 @@ namespace domoio {
         broadcasting_events = false;
       }
     }
-    void send_event(Event*);
+    void send_event(EventPtr);
 
   private:
     boost::asio::local::stream_protocol::socket socket;
