@@ -65,6 +65,8 @@ var console = require("console");
 var domoio = require("domoio");
 
 var __emit_events = function(channel, serializedData) {
+  console.log("Morcillaaa");
+  console.log(serializedData);
   var data = JSON.parse(serializedData);
   domoio.emit(channel, data);
 }

@@ -75,6 +75,9 @@ set(SRC ${SRC}
 # JS Engine
 set(SRC ${SRC}
   ./src/jsengine/engine
+  ./src/jsengine/device_template
+  ./src/jsengine/port_template
+  ./src/jsengine/devices_callback
   ./src/jsengine/log_callback
   ./src/jsengine/read_file_callback
   ./src/jsengine/file_exists_callback

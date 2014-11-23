@@ -60,6 +60,8 @@ namespace domoio {
 
       static void MapSet(Local<String> name, Local<Value> value, const PropertyCallbackInfo<Value>& info);
 
+
+      // Custom
       // Event triggered for sending messages to user coe
       Persistent<Function> trigger_event_process;
     };
@@ -81,7 +83,6 @@ namespace domoio {
       return result;
     }
 
-
     // Execute the script and fetch the Process method.
     bool JsProcessor::Initialize(map<string, string>* opts, map<string, string>* output) {
 
@@ -94,6 +95,7 @@ namespace domoio {
       global->Set(String::NewFromUtf8(GetIsolate(), "__log"), FunctionTemplate::New(GetIsolate(), log_callback));
       global->Set(String::NewFromUtf8(GetIsolate(), "__read_file"), FunctionTemplate::New(GetIsolate(), read_file_callback));
       global->Set(String::NewFromUtf8(GetIsolate(), "__file_exists"), FunctionTemplate::New(GetIsolate(), file_exists_callback));
+      global->Set(String::NewFromUtf8(GetIsolate(), "__devices"), FunctionTemplate::New(GetIsolate(), devices_callback));
 
 
       // Each processor gets its own context so different processors don't
