@@ -6,6 +6,8 @@
   tasks:
   - name: Install build essentials
     apt: name=build-essential state=present
+  - name: Install build essentials
+    apt: name=build-essential state=present
   - name: Install Git
     apt: name=git-core state=present
   - name: Install SVN
@@ -17,7 +19,7 @@
 
     # Domoio Libs
   - name: Postgres
-    apt: name=postgresql-9.1 state=present
+    apt: name=postgresql state=present
     # Domoio development libs
   - name: Postgres dev
     apt: name=libpq-dev state=present
@@ -30,5 +32,20 @@
 
   - name: Install v8
     file: path=/home/harlock/src state=directory owner=harlock group=harlock
-  - name: Clone repo
-    subversion: repo=http://v8.googlecode.com/svn/branches/3.25/ dest=/home/harlock/src/v8-3.25
+  - git: repo=https://chromium.googlesource.com/v8/v8.git
+       dest=/home/harlock/src/v8-3.25
+       version=3.27.24
+
+  # Build V8
+  - shell: make dependencies && make x64.release
+    args:
+      chdir: /home/harlock/src/v8-3.25
+      creates: out/x64.release/obj.target/tools/gyp/libv8_base.a
+  - shell: cp include/*.h /usr/local/include
+    args:
+      chdir: /home/harlock/src/v8-3.25
+      creates: /usr/local/include/v8.h
+  - shell: cp out/x64.release/obj.target/tools/gyp/lib*.a /usr/local/lib
+    args:
+      chdir: /home/harlock/src/v8-3.25
+      creates: /usr/local/lib/libv8_base.a
