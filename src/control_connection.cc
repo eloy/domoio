@@ -38,12 +38,11 @@ namespace domoio {
 
     std::string cmd(&this->data[0], bytes_transferred);
     this->dispatch_request(cmd);
+    this->read();
   }
 
   void ControlConnection::handle_write(const boost::system::error_code& error) {
     if (error) { return; }
-
-    this->read();
   }
 
 

@@ -39,6 +39,14 @@ namespace domoio {
 
   }
 
+
+  std::map<int, Device*>::iterator devices_iterator() {
+    return devices.begin();
+  }
+
+  const std::map<int, Device*> *all_devices() {
+    return &devices;
+  }
   Device *device_find(int id) {
     return devices[id];
   }

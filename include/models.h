@@ -2,7 +2,7 @@
 #define MODELS_H
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
+#include "jsengine.h"
 #define keypair(type) std::pair<std::string, type>
 
 namespace domoio {
@@ -15,7 +15,7 @@ namespace domoio {
       : device(_device), _id(id), _name(name), _digital(digital), _output(output) {
       this->_value = -1;
     }
-    const char *name();
+    std::string name() { return this->_name; };
     bool digital() { return this->_digital; }
     bool analogic() { return !this->_digital; }
     bool output() { return this->_output; }
@@ -57,7 +57,6 @@ namespace domoio {
 
   class Device {
   public:
-
     ~Device(void) {
       for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
         delete(it->second);
@@ -76,7 +75,7 @@ namespace domoio {
     const std::string label;
     int ports_count() { return this->ports.size(); }
     Port *port(int id) { return this->ports[id]; }
-
+    std::map<int, Port*> *get_ports() { return &this->ports; }
 
     // Type
     bool is_network_device() { return this->device_type == network_device; }
@@ -128,7 +127,8 @@ namespace domoio {
   void load_devices(void);
   void free_devices(void);
   Device *device_find(int);
-
+  std::map<int, Device*>::iterator devices_iterator(void);
+  const std::map<int, Device*> *all_devices();
   bool device_set_port_state(std::string, int);
   std::string devices_to_json();
 }

@@ -1,2 +1,4 @@
 * Domoio
+** Install a development maching with ansible
+   : ansible-playbook ansible/devmachine.yml --ask-sudo-pass
 ** Credits:

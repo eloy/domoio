@@ -2,4 +2,10 @@ console.log "Here I am, user code ready to run"
 console.log domoio.version
 
 domoio.onAll (event) ->
-  console.log event
+  console.log "Event raised #{event.device.label}"
+  event.device.ports[0].value = 1
+
+for device in domoio.devices.all()
+  console.log "Device: #{device.id} => #{device.label}"
+  for port in device.ports
+    console.log "Port: #{port.id} => #{port.value}"
