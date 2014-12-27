@@ -11,8 +11,6 @@ set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_ROOT}/cmake/Modules/")
 
 
-
-
 # Setup includes
 include_directories(./include)
 
@@ -22,6 +20,9 @@ set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES})
 
 
 # Postgres
+# https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/1317135
+# set(PostgreSQL_ADDITIONAL_SEARCH_PATHS "/usr/include/postgresql/9.3/server")
+
 find_package(PostgreSQL)
 set(DEP_LIBS ${DEP_LIBS} ${PostgreSQL_LIBRARIES})
 include_directories(${PostgreSQL_INCLUDE_DIRS})
