@@ -3,7 +3,7 @@ console.log domoio.version
 
 domoio.onAll (event) ->
   console.log "Event raised #{event.device.label}"
-  event.device.ports[0].value = event.value
+  event.device.ports[0].value = 1
 
 for device in domoio.devices.all()
   console.log "Device: #{device.id} => #{device.label}"
