@@ -32,31 +32,27 @@ ELSE(WIN32)
 		DOC "V8 include dir")
 
 
-	FIND_LIBRARY( V8_LIBRARY
-        NAMES libv8_base.a libv8_base.x64.a
-		PATHS
+  SET(SEARCH_PATHS
     ${V8_LIB_DIR}/
-		${V8_LIB_DIR}/lib
-		/usr/lib64
-		/usr/lib
-		/usr/local/lib64
-		/usr/local/lib
-		/sw/lib
-		/opt/local/lib
+	  ${V8_LIB_DIR}/lib
+	  /usr/lib64
+	  /usr/lib
+	  /usr/local/lib64
+	  /usr/local/lib
+	  /sw/lib
+	  /opt/local/lib
+    )
+
+
+	FIND_LIBRARY( V8_LIBRARY
+    NAMES libv8_base.a libv8_base.x64.a
+		PATHS ${SEARCH_PATHS}
 		DOC "The V8 library")
 
-	FIND_LIBRARY( V8_SNAPSHOT_LIBRARY
-        NAMES libv8_snapshot.a libv8_snapshot.x64.a
-		PATHS
-		${V8_LIB_DIR}/
-    ${V8_LIB_DIR}/lib
-		/usr/lib64
-		/usr/lib
-		/usr/local/lib64
-		/usr/local/lib
-		/sw/lib
-		/opt/local/lib
 
+	FIND_LIBRARY( V8_SNAPSHOT_LIBRARY
+    NAMES libv8_snapshot.a libv8_snapshot.x64.a
+		PATHS ${SEARCH_PATHS}
 		DOC "The V8 library")
 
 ENDIF(WIN32)
@@ -66,10 +62,19 @@ IF(V8_INCLUDE_PATH AND V8_LIBRARY AND V8_SNAPSHOT_LIBRARY)
 	SET(V8_LIBRARIES ${V8_LIBRARY} ${V8_SNAPSHOT_LIBRARY})
 	SET(V8_INCLUDE_DIRS ${V8_INCLUDE_PATH})
 	SET(V8_FOUND "YES")
-    message(STATUS "Found V8")
-    message(STATUS ${V8_LIBRARIES}   )
+  MESSAGE(STATUS "Found V8")
+
 ELSE(V8_INCLUDE_PATH AND V8_LIBRARY AND V8_SNAPSHOT_LIBRARY)
     message(STATUS "V8 NOT FOUND!!")
-    # message(STATUS ${V8_INCLUDE})
-    # message(STATUS ${V8_LIBRARY})
 ENDIF(V8_INCLUDE_PATH AND V8_LIBRARY AND V8_SNAPSHOT_LIBRARY)
+
+
+FIND_LIBRARY( V8_BASE_LIBRARY
+        NAMES libv8_libbase.a libv8_libbase.x64.a
+		    PATHS ${SEARCH_PATHS}
+		    DOC "The V8 Base library")
+
+IF(V8_BASE_LIBRARY)
+  SET(V8_LIBRARIES ${V8_LIBRARIES} ${V8_BASE_LIBRARY})
+  message(STATUS "Found V8 libv8_base")
+ENDIF(V8_BASE_LIBRARY)

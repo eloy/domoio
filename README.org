@@ -1,4 +1,19 @@
 * Domoio
 ** Install a development maching with ansible
    : ansible-playbook ansible/devmachine.yml --ask-sudo-pass
+** Build domoio
+   #+BEGIN_SRC sh
+     git clone git@github.com:harlock/domoio.git
+     cd domoio
+     mkdir build
+     cd build
+     cmake ..
+     make
+   #+END_SRC
+
+   In case you are using Ubuntu, you must set the option
+   PGSQL_SEARCH_PATH with the location where postgresql is installed, so
+   replace the command cmake with this:
+:     cmake -DPGSQL_SEARCH_PATH=/usr/include/postgresql/9.3/server ..
+   For more information see this bug: https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/1317135
 ** Credits:

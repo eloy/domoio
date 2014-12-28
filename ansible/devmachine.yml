@@ -29,23 +29,23 @@
     apt: name=libssl-dev state=present
 
 
+  # Build and install V8
+  #---------------------------------------------------------------------
 
   - name: Install v8
-    file: path=/home/harlock/src state=directory owner=harlock group=harlock
+    file: path=/var/local/src state=directory owner=root group=root
   - git: repo=https://chromium.googlesource.com/v8/v8.git
-       dest=/home/harlock/src/v8-3.25
+       dest=/var/local/src/v8-3.25
        version=3.27.24
-
-  # Build V8
   - shell: make dependencies && make x64.release
     args:
-      chdir: /home/harlock/src/v8-3.25
+      chdir: /var/local/src/v8-3.25
       creates: out/x64.release/obj.target/tools/gyp/libv8_base.a
   - shell: cp include/*.h /usr/local/include
     args:
-      chdir: /home/harlock/src/v8-3.25
+      chdir: /var/local/src/v8-3.25
       creates: /usr/local/include/v8.h
-  - shell: cp out/x64.release/obj.target/tools/gyp/lib*.a /usr/local/lib
+  - shell: cp tools/gyp/lib*.a /usr/local/lib && cp third_party/icu/libicu*.a /usr/local/lib
     args:
-      chdir: /home/harlock/src/v8-3.25
+      chdir: /var/local/src/v8-3.25/out/x64.release/obj.target
       creates: /usr/local/lib/libv8_base.a

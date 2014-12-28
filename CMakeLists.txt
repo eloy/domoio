@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8.8)
 project (domoio)
 
+option(PGSQL_SEARCH_PATH "Aditional paths where search for postgres libs")
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic" )
 # SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -stdlib=libc++")
@@ -18,10 +19,18 @@ include_directories(./include)
 find_package(V8)
 set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES})
 
+# ICU
+find_package(ICU)
+set(DEP_LIBS ${DEP_LIBS} ${ICU_LIBRARIES})
+
 
 # Postgres
 # https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/1317135
-# set(PostgreSQL_ADDITIONAL_SEARCH_PATHS "/usr/include/postgresql/9.3/server")
+# "/usr/include/postgresql/9.3/server"
+IF(PGSQL_SEARCH_PATH)
+  #SET(PostgreSQL_ADDITIONAL_SEARCH_PATHS ${PGSQL_SEARCH_PATH})
+  MESSAGE(STATUS fOO ${PGSQL_SEARCH_PATH})
+ENDIF(PGSQL_SEARCH_PATH)
 
 find_package(PostgreSQL)
 set(DEP_LIBS ${DEP_LIBS} ${PostgreSQL_LIBRARIES})
@@ -87,7 +96,7 @@ set(SRC ${SRC}
 
 
 # Create the shared library
-add_library (domoio_base SHARED ${SRC})
+add_library (domoio_base ${SRC})
 target_link_libraries (domoio_base ${DEP_LIBS})
 
 
@@ -122,8 +131,6 @@ IF(GTEST_PATH)
   set(TEST_DEP_LIBS ${TEST_DEP_LIBS} -L${GTEST_PATH}/build-aux)
 ENDIF(GTEST_PATH)
 set(TEST_DEP_LIBS ${TEST_DEP_LIBS} -lgtest -lgtest_main)
-
-
 
 
 # Support code
