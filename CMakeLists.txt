@@ -3,33 +3,33 @@ project (domoio)
 
 option(PGSQL_SEARCH_PATH "Aditional paths where search for postgres libs")
 
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic" )
-# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -stdlib=libc++")
+# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
 
 set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Location for custm Find*.cmake files
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_ROOT}/cmake/Modules/")
 
-
 # Setup includes
 include_directories(./include)
 
 # V8
+#-----------------------------------------------------------------------
+
 find_package(V8)
-set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES})
+set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES} -lpthread)
 
 # ICU
 find_package(ICU)
 set(DEP_LIBS ${DEP_LIBS} ${ICU_LIBRARIES})
 
-
 # Postgres
+#-----------------------------------------------------------------------
+
 # https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/1317135
 # "/usr/include/postgresql/9.3/server"
 IF(PGSQL_SEARCH_PATH)
-  #SET(PostgreSQL_ADDITIONAL_SEARCH_PATHS ${PGSQL_SEARCH_PATH})
-  MESSAGE(STATUS fOO ${PGSQL_SEARCH_PATH})
+  SET(PostgreSQL_ADDITIONAL_SEARCH_PATHS ${PGSQL_SEARCH_PATH})
 ENDIF(PGSQL_SEARCH_PATH)
 
 find_package(PostgreSQL)
@@ -37,15 +37,20 @@ set(DEP_LIBS ${DEP_LIBS} ${PostgreSQL_LIBRARIES})
 include_directories(${PostgreSQL_INCLUDE_DIRS})
 
 # OpenSSL
+#-----------------------------------------------------------------------
+
 find_package(OpenSSL)
 set(DEP_LIBS ${DEP_LIBS} ${OPENSSL_LIBRARIES})
 include_directories(${OPENSSL_INCLUDE_DIR})
 
 # BOOST
+#-----------------------------------------------------------------------
+
 include_directories(/Users/harlock/src/c/boost)
 set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup -lboost_filesystem -lboost_date_time)
 
 # Add sources
+#-----------------------------------------------------------------------
 
 set(SRC ${SRC}
   ./src/domoio
@@ -96,11 +101,15 @@ set(SRC ${SRC}
 
 
 # Create the shared library
+#-----------------------------------------------------------------------
+
 add_library (domoio_base ${SRC})
 target_link_libraries (domoio_base ${DEP_LIBS})
 
 
 # Add the exectutable
+#-----------------------------------------------------------------------
+
 add_executable(domoio ./src/main)
 target_link_libraries (domoio domoio_base ${DEP_LIBS})
 
