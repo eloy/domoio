@@ -3,7 +3,7 @@
 namespace domoio {
   namespace commands {
 
-    static void all_ports_state(DeviceConnection *conn, CommandParams params) {
+    void all_ports_state(DeviceConnection *conn, CommandParams params) {
       int ports_count = params->size() - 1;
       Device *device = conn->get_device();
 
@@ -20,7 +20,5 @@ namespace domoio {
 
       conn->send("200 OK");
     }
-
-    bool aps_set_registered = domoio::register_device_command("aps", new DeviceCommandDef(&all_ports_state, 2, "Update values for all ports"));
   }
 }

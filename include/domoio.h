@@ -205,6 +205,7 @@ namespace domoio {
 
 
   bool register_device_command(std::string, DeviceCommandDef*);
+  void init_device_commands();
 
   class ControlCommandDef {
   public:
@@ -216,6 +217,7 @@ namespace domoio {
   };
 
   bool register_control_command(std::string, ControlCommandDef*);
+  void init_control_commands();
 
 }
 
