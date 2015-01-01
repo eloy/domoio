@@ -11,7 +11,7 @@ set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_ROOT}/cmake/Modules/")
 
 # Setup includes
-include_directories(./include)
+include_directories(./include ./vendor/include)
 
 # V8
 #-----------------------------------------------------------------------

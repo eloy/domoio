@@ -8,26 +8,41 @@ namespace domoio {
     }
   }
 
-  boost::property_tree::ptree Port::to_pt() {
+  // boost::property_tree::ptree Port::to_pt() {
 
-    boost::property_tree::ptree pt;
+  //   boost::property_tree::ptree pt;
 
-    pt.put("id", this->_id);
-    pt.put("name", this->_name);
-    pt.put("digital", this->digital());
-    pt.put("output", this->output());
+  //   pt.put("id", this->_id);
+  //   pt.put("name", this->_name);
+  //   pt.put("digital", this->digital());
+  //   pt.put("output", this->output());
 
+  //   if (this->digital()) {
+  //     if (this->value() > 0) {
+  //       pt.put("value", true);
+  //     } else {
+  //       pt.put("value", false);
+  //     }
+  //   } else {
+  //     pt.put("value", this->value());
+  //   }
+
+  //   return pt;
+  // }
+
+  void Port::to_json_object(json::Object &d) {
+    d["id"] = json::Number(this->_id);
+    d["name"] = json::String(this->_name);
+    d["digital"] = json::Boolean(this->digital());
+    d["output"] = json::Boolean(this->output());
     if (this->digital()) {
       if (this->value() > 0) {
-        pt.put("value", true);
+        d["value"] = json::Boolean(true);
       } else {
-        pt.put("value", false);
+        d["value"] = json::Boolean(false);
       }
     } else {
-      pt.put("value", this->value());
+      d["value"] = json::Number(this->value());
     }
-
-    return pt;
   }
-
 }

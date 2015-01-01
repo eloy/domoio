@@ -3,6 +3,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "jsengine.h"
+#include "json.h"
+
 #define keypair(type) std::pair<std::string, type>
 
 namespace domoio {
@@ -24,7 +26,7 @@ namespace domoio {
     int value() { return this->_value; }
     void set_value(int);
 
-    boost::property_tree::ptree to_pt();
+    void to_json_object(json::Object&);
 
   protected:
     int _id;
@@ -69,7 +71,7 @@ namespace domoio {
     bool is_connected() { return this->connected; }
 
 
-    boost::property_tree::ptree to_pt();
+    void to_json_object(json::Object&);
 
     const int id;
     const std::string label;

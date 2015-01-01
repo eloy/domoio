@@ -17,3 +17,4 @@
 :     cmake -DPGSQL_SEARCH_PATH=/usr/include/postgresql/9.3/server ..
    For more information see this bug: https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/1317135
 ** Credits:
+   ** https://github.com/cajun-jsonapi/cajun-jsonapi

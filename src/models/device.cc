@@ -102,24 +102,19 @@ namespace domoio {
     return true;
   }
 
+  void Device::to_json_object(json::Object &d) {
 
-  boost::property_tree::ptree Device::to_pt() {
-
-    boost::property_tree::ptree pt;
-
-    pt.put("id", this->id);
-    pt.put("label", this->label);
-    pt.put("description", this->description);
-    pt.put("connected", this->connected);
-    // ...
-
-    boost::property_tree::ptree ports_tree;
+    d["id"] = json::Number(this->id);
+    d["label"] = json::String(this->label);
+    d["description"] = json::String(this->description);
+    d["connected"] = json::Boolean(this->connected);
+    json::Array ports;
     for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
-      ports_tree.push_back(std::make_pair("", it->second->to_pt()));
+      json::Object port;
+      it->second->to_json_object(port);
+      ports.Insert(port);
     }
-    pt.add_child("ports", ports_tree);
-    return pt;
-
+    d["ports"] = ports;
   }
 
   bool device_set_port_state(std::string target_url, int value) {
@@ -135,16 +130,15 @@ namespace domoio {
 
 
   std::string devices_to_json() {
-
-    boost::property_tree::ptree pt, devices_tree;
-
+    json::Array devices_array;
     for (std::map<int, Device*>::iterator it = devices.begin(); it != devices.end(); ++it) {
-      devices_tree.push_back(std::make_pair("", it->second->to_pt()));
+      json::Object device;
+      it->second->to_json_object(device);
+      devices_array.Insert(device);
     }
-    pt.add_child("devices", devices_tree);
 
     std::stringstream ss;
-    write_json(ss, pt, false);
+    json::Writer::Write(devices_array, ss);
     return ss.str();
   }
 
