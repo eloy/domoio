@@ -1,5 +1,6 @@
 #include "domoio.h"
 #include "jsengine.h"
+#include "httpd.h"
 
 void on_exit() {
   domoio::exit_domoio();
@@ -37,5 +38,9 @@ int main(int argc, char* argv[]) {
   // JS service
   domoio::init_jsengine();
 
+  // HTTP Server
+  domoio::httpd::init_httpd();
+
+  // Devices Server
   domoio::run_server();
 }

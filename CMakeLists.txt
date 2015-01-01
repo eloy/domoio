@@ -47,7 +47,15 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 #-----------------------------------------------------------------------
 
 include_directories(/Users/harlock/src/c/boost)
-set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup -lboost_filesystem -lboost_date_time)
+set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib
+  -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup
+  -lboost_filesystem -lboost_date_time -lboost_regex)
+
+
+# MicroHttpd
+#-----------------------------------------------------------------------
+set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
+
 
 # Add sources
 #-----------------------------------------------------------------------
@@ -98,7 +106,14 @@ set(SRC ${SRC}
   ./src/jsengine/file_exists_callback
   )
 
-
+# HTTP Server
+set(SRC ${SRC}
+  ./src/httpd/server
+  ./src/httpd/request
+  ./src/httpd/httpd_action
+  ./src/httpd/actions/devices
+  ./src/httpd/actions/events
+  )
 
 # Create the shared library
 #-----------------------------------------------------------------------
@@ -132,6 +147,9 @@ set(TEST_SRC ${TEST_SRC} ./test/domoio_test
 set(TEST_SRC ${TEST_SRC}
   ./test/unit/devices_test
   ./test/unit/block_cypher_test
+  ./test/unit/httpd/server_test
+  ./test/unit/httpd/request_test
+  ./test/unit/httpd/httpd_action_test
 )
 
 # Configure Google Test Lib
@@ -153,3 +171,8 @@ set(TEST_SRC ${TEST_SRC}
 
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})
 target_link_libraries (test domoio_base ${DEP_LIBS} ${TEST_DEP_LIBS})
+
+
+
+# INSTALL
+#-----------------------------------------------------------------------
