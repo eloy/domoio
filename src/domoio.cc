@@ -6,8 +6,8 @@
 namespace domoio {
   void init_domoio(void) {
     namespace logging = boost::log;
-    logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::warning);
-
+    //logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::warning);
+    logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::info);
     domoio::db::connect();
     domoio::load_devices();
     // Add commands

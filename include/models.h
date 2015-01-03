@@ -37,20 +37,6 @@ namespace domoio {
     Device *device;
   };
 
-  // class NetworkPort : public Port {
-  // public:
-  //   NetworkPort(Device* device, int id, std::string name, bool digital, bool output) : Port(device, id, name, digital, output) {
-  //     this->_value = -1;
-  //   }
-  // };
-
-  // class VirtualPort : public Port {
-  // public:
-  //   VirtualPort(Device* device, int id, std::string name, bool digital, bool output) : Port(device, id, name, digital, output) {
-
-  //   }
-  // };
-
 
   enum DeviceType {
     network_device,

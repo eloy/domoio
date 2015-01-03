@@ -1,6 +1,17 @@
 #include "domoio.h"
 #include "jsengine.h"
 #include "httpd.h"
+#include <sys/resource.h>
+
+static bool EnableCoreDumps(void) {
+  struct rlimit   limit;
+
+  limit.rlim_cur = RLIM_INFINITY;
+  limit.rlim_max = RLIM_INFINITY;
+  return setrlimit(RLIMIT_CORE, &limit) == 0;
+}
+
+
 
 void on_exit() {
   domoio::exit_domoio();
@@ -15,7 +26,7 @@ void my_handler(int s){
 
 
 int main(int argc, char* argv[]) {
-
+  // EnableCoreDumps();
   // Catch signals
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = my_handler;

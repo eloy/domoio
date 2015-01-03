@@ -31,6 +31,9 @@ namespace domoio {
     }
 
 
+    /*
+     * Params
+     */
     const char* Request::param(std::string name) {
       if (!this->has_url_params) return NULL;
       return this->params[name].c_str();
@@ -43,5 +46,20 @@ namespace domoio {
 
       return atoi(value);
     }
+
+
+    bool Request::require_post_processor() {
+      if (this->request_headers["Content-Type"] == "application/x-www-form-urlencoded") {
+        return true;
+      }
+      return false;
+    }
+
+    const char * CONTENT_TYPE_JSON = "application/json";
+    bool Request::has_json_post_data() {
+      std::string content_type = this->request_headers["Content-Type"];
+      return strncmp(CONTENT_TYPE_JSON, content_type.c_str(), strlen(CONTENT_TYPE_JSON));
+    }
+
   }
 }
