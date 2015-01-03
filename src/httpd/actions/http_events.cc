@@ -41,7 +41,10 @@ namespace domoio {
         SSEContext *ctx = (SSEContext*) cls;
         if (ctx->initialized == false) {
           ctx->initialized = true;
-          return snprintf(buf, buffer_size, "foo\n");
+          int initiator_size = 2048;
+          char initiator[initiator_size];
+          memset(&initiator[0], ' ', initiator_size);
+          return snprintf(buf, buffer_size, ":%s\n\n", initiator);
         }
 
         boost::unique_lock<boost::mutex> lock(ctx->mutex);
@@ -64,6 +67,9 @@ namespace domoio {
         SSEContext *ctx = new SSEContext();
         request->status = MHD_HTTP_OK;
         request->response = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN, BUFFER_SIZE, &data_generator, ctx, &free_callback);
+        MHD_add_response_header(request->response, "Content-Type", "text/event-stream");
+        MHD_add_response_header(request->response, "Cache-Control",  "no-cache");
+        MHD_add_response_header(request->response,"Connection", "keep-alive");
         return true;
       }
     }
