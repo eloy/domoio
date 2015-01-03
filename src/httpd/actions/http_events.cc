@@ -1,5 +1,6 @@
 #include "domoio.h"
 #include "httpd.h"
+
 #define BUFFER_SIZE 3072
 
 namespace domoio {
@@ -17,10 +18,16 @@ namespace domoio {
 
         void add_event(EventPtr event) {
           this->queue.push_back(event);
+          boost::lock_guard<boost::mutex> lock(this->mutex);
+          this->cond.notify_one();
         }
 
         std::deque<EventPtr> queue;
         bool initialized;
+
+        boost::condition_variable cond;
+        boost::mutex mutex;
+
       private:
         signals_connection events_connection;
       };
@@ -37,8 +44,9 @@ namespace domoio {
           return snprintf(buf, buffer_size, "foo\n");
         }
 
-        if (ctx->queue.empty()) {
-          return 0;
+        boost::unique_lock<boost::mutex> lock(ctx->mutex);
+        while(ctx->queue.empty()) {
+          ctx->cond.wait(lock);
         }
 
         EventPtr event_ptr = ctx->queue.front();
