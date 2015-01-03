@@ -50,8 +50,17 @@ namespace domoio {
       bool require_post_processor();
       bool has_json_post_data();
 
+
+      // Action Context
+      void *action_context;
+      void set_action_context(void * ctx) {
+        action_context = ctx;
+        has_action_context = true;
+      }
+
       std::map<std::string, std::string> request_headers;
     private:
+      bool has_action_context;
       bool has_url_params;
       std::map<std::string, std::string> params;
     };

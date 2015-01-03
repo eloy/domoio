@@ -49,6 +49,10 @@ namespace domoio {
       return MHD_YES;
     }
 
+
+    /*
+     * Executed when request finish
+     */
     void request_completed (void *cls, struct MHD_Connection *connection, void **con_cls, enum MHD_RequestTerminationCode toe) {
       LOG(trace) << "HTTP connection closed";
       if (NULL == cls) return;

@@ -1,14 +1,8 @@
 #include "domoio.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include "json.h"
 
 namespace domoio {
-
-
   namespace events {
-
-
-
 
 
     boost::asio::io_service::id EventsService::id;
@@ -71,64 +65,68 @@ namespace domoio {
 
   }
 
+
   std::string Event::to_json() {
-    using boost::property_tree::ptree;
-    ptree pt;
+    json::Object ev;
 
     switch(this->type) {
     case events::port_set:
-      pt.put("type", "port_set");
-      pt.put("device_id", this->device->id);
-      pt.put("port_id", this->port->id());
+      ev["type"] = json::String("port_set");
+      ev["device_id"] = json::Number(this->device->id);
+      ev["port_id"] = json::Number(this->port->id());
 
       // If port is digital set to true or false
       if (this->port->digital()) {
-        // new valud
+        // new value
         if (this->new_value > 0) {
-          pt.put("value", true);
+          ev["value"] = json::Boolean(true);
         } else {
-          pt.put("value", false);
+          ev["value"] = json::Boolean(false);
         }
         // old value
         if (this->old_value > 0) {
-          pt.put("old_value", true);
+          ev["old_value"] = json::Boolean(true);
         } else {
-          pt.put("old_value", false);
+          ev["old_value"] = json::Boolean(false);
         }
       }
       // Otherwhise, just print the value
       else {
-        pt.put("value", this->new_value);
-        pt.put("old_value", this->old_value);
+        ev["value"] = json::Number(this->new_value);
+        ev["old_value"] = json::Number(this->old_value);
       }
 
       break;
 
-    // Device Connected
+      // Device Connected
     case events::device_connected:
-      pt.put("type", "device_connected");
-      pt.put("device_id", this->device->id);
+      ev["type"] = json::String("device_connected");
+      ev["device_id"] = json::Number(this->device->id);
       break;
 
-    // Device Disconnected
+      // Device Disconnected
     case events::device_disconnected:
-      pt.put("type", "device_disconnected");
-      pt.put("device_id", this->device->id);
+      ev["type"] = json::String("device_disconnected");
+      ev["device_id"] = json::Number(this->device->id);
       break;
 
     default:
-      pt.put("type", "unkuwn");
+      ev["type"] = json::String("unknown");
     }
 
     // Shared fields
-    pt.put("date", this->date);
-    pt.put("channel", this->channel_name());
+    ev["date"] = json::String("foo");
+    //pt.put("date", this->date);
+    ev["channel"] = json::String(this->channel_name());
 
 
     std::stringstream ss;
-    write_json(ss, pt, false);
+    json::Writer::Write(ev, ss);
     return ss.str();
   }
+
+
+
 
   std::string Event::channel_name() {
     switch(this->channel) {

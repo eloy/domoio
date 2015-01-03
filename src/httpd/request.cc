@@ -5,6 +5,9 @@ namespace domoio {
   namespace httpd {
 
     Request::~Request() {
+      if (this->has_action_context) {
+        delete(this->action_context);
+      }
     }
 
 
