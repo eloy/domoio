@@ -90,15 +90,7 @@ namespace domoio {
     Port *port = this->port(port_id);
     if (port == NULL) return false;
 
-    if (port->value() == value) {
-      return true;
-    }
-
     port->set_value(value);
-
-    char buffer[CLIENT_BUFFER_MAX_LENGTH];
-    snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", port_id, value);
-    this->network_signals(&buffer[0]);
     return true;
   }
 

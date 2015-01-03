@@ -1,34 +1,37 @@
 #include "domoio.h"
 
 namespace domoio {
-  void Port::set_value(int new_value) {
-    if (this->value() != new_value) {
-      events::send(new Event(events::port_set, events::private_channel, this->device, this, this->value(), new_value));
-      this->_value = new_value;
+
+  void Port::set_value(bool new_value) {
+    int value;
+    if (new_value) {
+      value = 1;
+    } else {
+      value = 0;
     }
+    this->set_value(value);
   }
 
-  // boost::property_tree::ptree Port::to_pt() {
+  void Port::set_value(int new_value) {
 
-  //   boost::property_tree::ptree pt;
+    if (this->value() == new_value) return;
 
-  //   pt.put("id", this->_id);
-  //   pt.put("name", this->_name);
-  //   pt.put("digital", this->digital());
-  //   pt.put("output", this->output());
+    events::send(new Event(events::port_set, events::private_channel, this->device, this, this->value(), new_value));
 
-  //   if (this->digital()) {
-  //     if (this->value() > 0) {
-  //       pt.put("value", true);
-  //     } else {
-  //       pt.put("value", false);
-  //     }
-  //   } else {
-  //     pt.put("value", this->value());
-  //   }
+    // Send to device
+    if (this->device->is_network_device()) {
+      char buffer[CLIENT_BUFFER_MAX_LENGTH];
+      snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", this->_id, new_value);
+      this->send_to_device(&buffer[0]);
+    }
 
-  //   return pt;
-  // }
+    this->_value = new_value;
+  }
+
+  bool Port::send_to_device(const char *data) {
+    this->device->network_signals(data);
+    return true;
+  }
 
   void Port::to_json_object(json::Object &d) {
     d["id"] = json::Number(this->_id);

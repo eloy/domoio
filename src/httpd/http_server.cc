@@ -21,11 +21,13 @@ namespace domoio {
       DEF_HTTPD_ACTION(events);
       DEF_HTTPD_ACTION(devices);
       DEF_HTTPD_ACTION(ports);
+      DEF_HTTPD_ACTION(set_port);
     }
 
     void register_actions() {
       register_action("/api/devices/?:id?", &actions::devices);
       register_action("/api/devices/:device_id/ports/?:id?", &actions::ports);
+      register_action("/api/devices/:device_id/ports/:id/set", &actions::set_port);
       register_action("/api/events", &actions::events);
     }
 
@@ -49,8 +51,8 @@ namespace domoio {
 
     void request_completed (void *cls, struct MHD_Connection *connection, void **con_cls, enum MHD_RequestTerminationCode toe) {
       LOG(trace) << "HTTP connection closed";
+      if (NULL == cls) return;
       Request *request = (Request*) cls;
-      if (request == NULL) return;
 
       if (request->require_post_processor()) {
         MHD_destroy_post_processor(request->post_processor);
@@ -93,6 +95,18 @@ namespace domoio {
 
       Request *request;
 
+      if (strcmp(method, "OPTIONS") == 0) {
+        struct MHD_Response *resp = MHD_create_response_from_buffer(0, (void*)"", MHD_RESPMEM_MUST_COPY);
+        MHD_add_response_header(resp, "Access-Control-Allow-Origin", "*");
+        MHD_add_response_header(resp, "Access-Control-Allow-Methods", "GET, PUT, POST");
+        MHD_add_response_header(resp, "Access-Control-Allow-Headers", "Content-type");
+        int ret = MHD_queue_response(connection, 200, resp);
+        MHD_destroy_response(resp);
+        return ret;
+      }
+
+
+
       /*
        * The first time only the headers are valid,
        * do not respond in the first round...
@@ -127,7 +141,7 @@ namespace domoio {
       // Process POST data
       if (*upload_data_size != 0) {
         request->post_data_received = true;
-        request->post_data_raw.assign(upload_data, *upload_data_size);
+        request->post_data_raw << std::string(upload_data, *upload_data_size);
         if (request->require_post_processor()) {
           LOG(info) << "Running post process";
           MHD_post_process(request->post_processor, upload_data, *upload_data_size);
@@ -144,8 +158,7 @@ namespace domoio {
 
       // Add global headers
       MHD_add_response_header(request->response, "Access-Control-Allow-Origin", "*");
-      MHD_add_response_header(request->response, "Access-Control-Allow-Methods", "GET, PUT, POST");
-      MHD_add_response_header(request->response, "Access-Control-Allow-Headers", "Content-type");
+
       // And send resoponse
       int ret = MHD_queue_response(connection, request->status, request->response);
       MHD_destroy_response(request->response);

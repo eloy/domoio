@@ -33,7 +33,7 @@ namespace domoio {
 
 
       struct MHD_PostProcessor *post_processor;
-      std::string post_data_raw;
+      std::stringstream post_data_raw;
       bool post_data_received;
 
       bool resolve(void);
@@ -43,7 +43,8 @@ namespace domoio {
 
       bool is_post() { return strcmp(this->method, "POST") == 0; }
       bool is_get() { return strcmp(this->method, "GET") == 0; }
-      bool is_put() { return (strcmp(this->method, "PUT") == 0) || (strcmp(this->method, "OPTIONS") == 0); }
+      bool is_put() { return strcmp(this->method, "PUT") == 0; }
+      bool is_options() { return strcmp(this->method, "OPTIONS") == 0; }
       bool is_delete() { return strcmp(this->method, "DELETE") == 0; }
 
       bool require_post_processor();
@@ -78,5 +79,6 @@ namespace domoio {
     bool register_action(const char*, HttpdCallback);
   }
 }
+
 #define DEF_HTTPD_ACTION(action_name) bool action_name(Request *request)
 #endif //HTTPD_H

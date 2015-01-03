@@ -142,6 +142,9 @@ set(TEST_SRC ${TEST_SRC} ./test/domoio_test
   ./test/features/signals_test
   ./test/features/cmd_set_test
   ./test/features/cmd_all_ports_state_test
+
+  # HTTP
+  ./test/features/http/ports/update_test
 )
 
 # Unit

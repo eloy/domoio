@@ -25,6 +25,7 @@ namespace domoio {
     int id() { return this->_id; }
     int value() { return this->_value; }
     void set_value(int);
+    void set_value(bool);
 
     void to_json_object(json::Object&);
 
@@ -35,6 +36,8 @@ namespace domoio {
     bool _output;
     int _value;
     Device *device;
+
+    bool send_to_device(const char*);
   };
 
 
