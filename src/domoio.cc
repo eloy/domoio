@@ -11,7 +11,6 @@ namespace domoio {
     domoio::db::connect();
     domoio::load_devices();
     // Add commands
-    domoio::init_control_commands();
     domoio::init_device_commands();
 
     domoio::crypto::init();
@@ -21,6 +20,5 @@ namespace domoio {
 
   void exit_domoio(void) {
     domoio::events::stop();
-    remove(conf_opt::socket_path.c_str());
   }
 }

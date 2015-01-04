@@ -12,17 +12,19 @@ namespace domoio {
     this->set_value(value);
   }
 
-  void Port::set_value(int new_value) {
+  void Port::set_value(int new_value, bool silent) {
 
     if (this->value() == new_value) return;
 
-    events::send(new Event(events::port_set, events::private_channel, this->device, this, this->value(), new_value));
+    if (silent == false) {
+      events::send(new Event(events::port_set, events::private_channel, this->device, this, this->value(), new_value));
 
-    // Send to device
-    if (this->device->is_network_device()) {
-      char buffer[CLIENT_BUFFER_MAX_LENGTH];
-      snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", this->_id, new_value);
-      this->send_to_device(&buffer[0]);
+      // Send to device
+      if (this->device->is_network_device()) {
+        char buffer[CLIENT_BUFFER_MAX_LENGTH];
+        snprintf(&buffer[0], CLIENT_BUFFER_MAX_LENGTH, "set %d %d", this->_id, new_value);
+        this->send_to_device(&buffer[0]);
+      }
     }
 
     this->_value = new_value;

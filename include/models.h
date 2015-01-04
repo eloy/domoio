@@ -24,9 +24,8 @@ namespace domoio {
     bool input() { return !this->_output; }
     int id() { return this->_id; }
     int value() { return this->_value; }
-    void set_value(int);
+    void set_value(int, bool silent=false);
     void set_value(bool);
-
     void to_json_object(json::Object&);
 
   protected:

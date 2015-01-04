@@ -116,7 +116,7 @@ namespace domoio {
        * do not respond in the first round...
        */
       if (NULL == *con_cls) {
-        LOG(info) << "Processing request type: " << method << " url: " << url << " version: " << version;
+        LOG(trace) << "Processing request type: " << method << " url: " << url;
         request = new Request(method, url);
 
         // Extract request headers
@@ -124,10 +124,10 @@ namespace domoio {
 
         // Prepare POST data
         if (request->require_post_processor()) {
-          LOG(info) << "Adding POST processor";
+          LOG(trace) << "Adding POST processor";
           request->post_processor = MHD_create_post_processor(connection, POST_BUFFER_SIZE, iterate_post, (void*) request);
           if (NULL == request->post_processor) {
-            LOG(error) << "Can't create post processor";
+            LOG(warning) << "Can't create post processor";
             return MHD_NO;
           }
         }
@@ -147,7 +147,6 @@ namespace domoio {
         request->post_data_received = true;
         request->post_data_raw << std::string(upload_data, *upload_data_size);
         if (request->require_post_processor()) {
-          LOG(info) << "Running post process";
           MHD_post_process(request->post_processor, upload_data, *upload_data_size);
         }
 
@@ -174,9 +173,8 @@ namespace domoio {
     struct MHD_Daemon * daemon;
     bool init_httpd() {
       register_actions();
-      int port = 8081;
-
-      daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, port, NULL, NULL,
+      LOG(info) << "Starting HTTP server on port " << conf_opt::http_port;
+      daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, conf_opt::http_port, NULL, NULL,
                            &request_callback, NULL,
                            MHD_OPTION_NOTIFY_COMPLETED, &request_completed, NULL,
                            MHD_OPTION_END);

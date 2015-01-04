@@ -13,7 +13,7 @@ namespace domoio {
 
         Port *port = device->port(id);
         if (port->value() != value) {
-          port->set_value(value);
+          port->set_value(value, true);
           // TODO send change event
         }
       }

@@ -3,7 +3,7 @@ project (domoio)
 
 option(PGSQL_SEARCH_PATH "Aditional paths where search for postgres libs")
 
-# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
+# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 
 set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -63,12 +63,10 @@ set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
 set(SRC ${SRC}
   ./src/domoio
   ./src/options
-  ./src/control_server
   ./src/server
   ./src/server_run
   ./src/connection
   ./src/device_connection
-  ./src/control_connection
   ./src/events
   ./src/database
   ./src/helpers
@@ -90,8 +88,6 @@ set(SRC ${SRC}
   ./src/commands/cmd_login
   ./src/commands/cmd_set
   ./src/commands/cmd_all_ports_state
-  ./src/commands/cmd_start_events
-  ./src/commands/cmd_get_devices
 )
 
 
@@ -168,7 +164,6 @@ set(TEST_DEP_LIBS ${TEST_DEP_LIBS} -lgtest -lgtest_main)
 include_directories(./test/support)
 set(TEST_SRC ${TEST_SRC}
   ./test/support/test_device
-  ./test/support/test_control
   ./test/support/factories
   ./test/support/helpers
 )

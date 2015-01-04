@@ -33,8 +33,6 @@
 
 int test_crypt(void);
 
-
-
 namespace domoio {
 
   void init_domoio(void);
@@ -101,56 +99,6 @@ namespace domoio {
   };
 
 
-
-  // Control Connection
-
-  class ControlConnection : public Connection {
-  public:
-    ControlConnection(boost::asio::io_service&);
-    ~ControlConnection() {
-      this->stop_listening_events();
-    }
-
-    boost::asio::local::stream_protocol::socket& get_socket(void) { return socket; }
-    void start();
-
-    void read();
-    bool close();
-    bool send(std::string);
-
-    bool create_session(int);
-    bool login(const char *);
-    bool execute_callback(std::vector<std::string>);
-
-    // Events
-    void start_listening_events() {
-      this->events_connection = domoio::events::add_listener(boost::bind(&ControlConnection::send_event, this, _1));
-      broadcasting_events = true;
-    }
-    void stop_listening_events() {
-      if (this->broadcasting_events) {
-        this->events_connection.disconnect();
-        broadcasting_events = false;
-      }
-    }
-    void send_event(EventPtr);
-
-  private:
-    boost::asio::local::stream_protocol::socket socket;
-    char data[CLIENT_BUFFER_MAX_LENGTH];
-
-    signals_connection events_connection;
-    bool broadcasting_events;
-
-    bool disconnected;
-
-    void handle_read(const boost::system::error_code&, size_t );
-    void handle_write(const boost::system::error_code&);
-  };
-
-
-  // Domoio Device Protocol Server
-
   class Server {
   public:
     Server(boost::asio::io_service&, short);
@@ -163,20 +111,6 @@ namespace domoio {
     boost::asio::ip::tcp::acceptor acceptor;
   };
 
-
-  // Control Server
-  class ControlServer {
-  public:
-    ControlServer(boost::asio::io_service& , const std::string&);
-
-  private:
-    void start_accept(void);
-    void handle_accept(ControlConnection*, const boost::system::error_code&);
-
-
-    boost::asio::io_service& io_service;
-    boost::asio::local::stream_protocol::acceptor acceptor;
-  };
 
   //-------------------------------------------------------------
 
@@ -192,7 +126,6 @@ namespace domoio {
    */
   typedef std::vector<std::string>* CommandParams;
   typedef void (*DeviceCommandCallback)(DeviceConnection*, CommandParams);
-  typedef void (*ControlCommandCallback)(ControlConnection*, CommandParams);
 
   class DeviceCommandDef {
   public:
@@ -206,18 +139,6 @@ namespace domoio {
 
   bool register_device_command(std::string, DeviceCommandDef*);
   void init_device_commands();
-
-  class ControlCommandDef {
-  public:
-  ControlCommandDef(ControlCommandCallback callback_, int argc_, std::string help_) : callback(callback_), argc(argc_), help(help_) {}
-
-    ControlCommandCallback callback;
-    int argc;
-    std::string help;
-  };
-
-  bool register_control_command(std::string, ControlCommandDef*);
-  void init_control_commands();
 
 }
 

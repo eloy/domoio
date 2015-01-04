@@ -9,9 +9,8 @@ namespace domoio {
 
   bool run_server(void) {
     try {
-      LOG(trace) << "Starting server in port " << conf_opt::port << "\n";
-      Server server(io_service, conf_opt::port);
-      ControlServer control_server(io_service, conf_opt::socket_path);
+      LOG(info) << "Starting Domoio server on port " << conf_opt::domoio_port;
+      Server server(io_service, conf_opt::domoio_port);
 
       boost::asio::io_service::work work(io_service);
       io_service.run();
@@ -29,13 +28,11 @@ namespace domoio {
   }
 
   Server *server = 0;
-  ControlServer *control_server = 0;
 
   bool start_network_servers(void) {
     try {
-      if (server == 0 && control_server == 0) {
-        server = new Server(io_service, conf_opt::port);
-        control_server = new ControlServer(io_service, conf_opt::socket_path);
+      if (server == 0) {
+        server = new Server(io_service, conf_opt::domoio_port);
         boost::asio::io_service::work work(io_service);
       }
       else {

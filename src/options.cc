@@ -62,8 +62,8 @@ namespace domoio {
 
 
   namespace conf_opt {
-    int port = 8013;
-    std::string socket_path = DOMOIO_UNIX_SOCKET_PATH;
+    int domoio_port;
+    int http_port;
 
     std::string db_name;
     std::string db_user;
@@ -83,8 +83,8 @@ namespace domoio {
       ;
 
     fileconf.add_options()
-      ("port,p", po::value<int>(&conf_opt::port)->default_value(8013), "Devices Connection TCP Port.")
-      ("socket_path,s", po::value<string>(&conf_opt::socket_path)->default_value(DOMOIO_UNIX_SOCKET_PATH), "Unix socket path.")
+      ("domoio_port", po::value<int>(&conf_opt::domoio_port)->default_value(8013), "Devices Connection TCP Port.")
+      ("http_port", po::value<int>(&conf_opt::http_port)->default_value(8081), "Web Server Port.")
       ("db_host", po::value<string>(&conf_opt::db_host), "Database Host")
       ("db_name", po::value<string>(&conf_opt::db_name), "Database Name")
       ("db_user", po::value<string>(&conf_opt::db_user), "Database User")
