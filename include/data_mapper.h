@@ -3,20 +3,34 @@
 #ifndef GENERATED_MODELS_H
 #define GENERATED_MODELS_H
 
-namespace domoio {
-  template <class T>
-  class M_User {
+#define SQL_QUERY_SIZE 1024
+
+namespace vault {
+
+  enum data_type {
+    string,
+    integer,
+    number,
+    boolean
+  };
+
+  class Field {
   public:
-    M_User() {
+  Field(const char* _name, data_type _type, void* _ptr) : name(_name), type(_type), ptr(_ptr) {}
+    const char *name;
+    const void * ptr;
+    data_type type;
+  };
+
+
+  template <class T>
+    class Model {
+  public:
+    Model(const char *_tablename) : tablename(_tablename) {
       this->id = 0;
     }
 
     int get_id() { return id;}
-
-    std::string get_name() { return this->name;}
-    void set_name(std::string new_name) { this->name.assign(new_name); }
-    std::string get_email() { return this->email;}
-    void set_email(std::string new_email) { this->email.assign(new_email); }
 
     bool save() {
       if (this->id != 0) {
@@ -27,50 +41,120 @@ namespace domoio {
     }
 
     static T *find(int id) {
+      T *record = new T();
+      record->load_from_db(id);
+      return record;
+    }
+
+    bool load_from_db(int id) {
       uint32_t _bin_id = htonl((uint32_t) id);
 
       const char *values[] = {((char *) &_bin_id)};
       int paramLengths[] = {sizeof(_bin_id)};
       int paramFormats[] = {1};
-      const char * sql = "select * from users where id=$1::int4;";
-      PGresult *res = PQexecParams(db::connection(), sql, 1, NULL, values, paramLengths, paramFormats, 0);
+
+      // Build tue query
+      std::string sql;
+      sql.append("select * from ").append(this->tablename).append(" where id=$1::int4;");
+
+      PGresult *res = PQexecParams(domoio::db::connection(), sql.c_str(), 1, NULL, values, paramLengths, paramFormats, 0);
 
       if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        LOG(error) << "SQL ERROR: " << PQerrorMessage(db::connection());
+        LOG(error) << "SQL ERROR: " << PQerrorMessage(domoio::db::connection());
         PQclear(res);
-        return NULL;
+        return false;
       }
 
-      int id_idx = PQfnumber(res, "id");
-      int name_idx = PQfnumber(res, "name");
-      int email_idx = PQfnumber(res, "email");
-
-      T *record = new T();
-
-      record->id = atoi(PQgetvalue(res, 0, id_idx));
-      record->name.assign(PQgetvalue(res, 0, name_idx));
-      record->email.assign(PQgetvalue(res, 0, email_idx));
-
+      this->load_from_res(res);
       PQclear(res);
-      return record;
+      return true;
     }
 
+    bool load_from_res(PGresult *res, int row=0) {
+      for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
+        Field *field = *it;
+        int index = PQfnumber(res, field->name);
+
+        // Set the ID
+        int id_idx = PQfnumber(res, "id");
+        this->id = atoi(PQgetvalue(res, row, id_idx));
+
+        switch (field->type) {
+        case integer: {
+          int *f_int = (int*) field->ptr;
+          *f_int = atoi(PQgetvalue(res, row, index));
+          break;
+        }
+        case string:{
+          std::string *f_str = (std::string*) field->ptr;
+          f_str->assign(PQgetvalue(res, row, index));
+          break;
+        }
+        default:
+          return false;
+          break;
+        }
+      }
+
+      return true;
+    }
 
   protected:
     int id;
-    std::string name;
-    std::string email;
+    void add_field(const char *name, data_type type, void *ptr) {
+      Field *f = new Field(name, type, ptr);
+      this->fields.push_back(f);
+    }
 
   private:
-    bool create() {
-      const char *values[] = {this->name.c_str(), this->email.c_str()};
-      int paramLengths[] = {sizeof(this->name.c_str()), sizeof(this->email.c_str())};
-      int paramFormats[] = {0,0};
-      const char * sql = "insert into users (name, email) values ($1, $2) RETURNING (id);";
+    std::vector<Field*> fields;
+    const char* tablename;
 
-      PGresult *res = PQexecParams(db::connection(), sql, 2, NULL, values, paramLengths, paramFormats, 0);
+    bool create() {
+      std::string fields_sql, values_sql;
+
+      int params_count = this->fields.size();
+      const char *values[params_count];
+      int paramLengths[params_count];
+      int paramFormats[params_count];
+
+      for (int i=0; i < params_count; i++) {
+        Field *field = this->fields.at(i);
+        if (i != 0 ) {
+          fields_sql.append(", ");
+          values_sql.append(", ");
+        }
+        fields_sql.append(field->name);
+        values_sql.append("$").append(boost::lexical_cast<std::string>(i + 1));
+        switch (field->type) {
+        case integer: {
+          values[i] = (const char *) field->ptr;
+          paramLengths[i] = sizeof(int);
+          paramFormats[i] = 1;
+          break;
+        }
+        case string:{
+          std::string *f_str = (std::string*) field->ptr;
+          values[i] = f_str->c_str();
+          paramLengths[i] = sizeof(char*);
+          paramFormats[i] = 0;
+          break;
+        }
+        default:
+          return false;
+          break;
+        }
+      }
+
+
+      std::string sql;
+      sql.append("insert into ").append(this->tablename).append(" (").
+        append(fields_sql).append(") values (").
+        append(values_sql).append(") RETURNING (id);");
+
+      PGresult *res = PQexecParams(domoio::db::connection(), sql.c_str(), params_count, NULL, values, paramLengths, paramFormats, 0);
       if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        LOG(error) << "SQL ERROR: " << PQerrorMessage(db::connection());
+        LOG(error) << "SQL ERROR: " << PQerrorMessage(domoio::db::connection());
         PQclear(res);
         return false;
       }
@@ -81,16 +165,55 @@ namespace domoio {
     }
 
     bool update() {
-      uint32_t _bin_id = htonl((uint32_t) this->id);
+      std::string set_sql;
 
-      const char *values[] = {this->name.c_str(), this->email.c_str(), ((char *) &_bin_id)};
-      int paramLengths[] = {sizeof(this->name.c_str()), sizeof(this->email.c_str()), sizeof(_bin_id)};
-      int paramFormats[] = {0,0,1};
-      const char * sql = "update users set name=$1, email=$2 where id=$3::int4;";
-      PGresult *res = PQexecParams(db::connection(), sql, 3, NULL, values, paramLengths, paramFormats, 1);
+      int params_count = this->fields.size() + 1; // +1 because update includes the id at the end
+      const char *values[params_count];
+      int paramLengths[params_count];
+      int paramFormats[params_count];
+
+      for (int i=0; i < this->fields.size(); i++) {
+        Field *field = this->fields.at(i);
+        if (i != 0 ) {
+          set_sql.append(", ");
+        }
+        set_sql.append(field->name).append("=").
+          append("$").append(boost::lexical_cast<std::string>(i + 1));
+
+        switch (field->type) {
+        case integer: {
+          values[i] = (const char *) field->ptr;
+          paramLengths[i] = sizeof(int);
+          paramFormats[i] = 1;
+          break;
+        }
+        case string:{
+          std::string *f_str = (std::string*) field->ptr;
+          values[i] = f_str->c_str();
+          paramLengths[i] = sizeof(char*);
+          paramFormats[i] = 0;
+          break;
+        }
+        default:
+          return false;
+          break;
+        }
+      }
+
+      // Add the id as the last param
+      int last = params_count - 1;
+      uint32_t bin_id = htonl((uint32_t) this->id);
+      values[last] = (const char *) &bin_id;
+      paramLengths[last] = sizeof(int);
+      paramFormats[last] = 1;
+
+      std::string sql;
+      sql.append("update ").append(this->tablename).append(" set ").append(set_sql).append(" where id=$3::int4;");
+
+      PGresult *res = PQexecParams(domoio::db::connection(), sql.c_str(), params_count, NULL, values, paramLengths, paramFormats, 1);
 
       if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        LOG(error) << "SQL ERROR: " << PQerrorMessage(db::connection());
+        LOG(error) << "SQL ERROR: " << PQerrorMessage(domoio::db::connection());
         PQclear(res);
         return false;
       }
@@ -101,8 +224,28 @@ namespace domoio {
 
   };
 
+}
 
-  class User : public M_User<User> {
+
+
+namespace domoio {
+
+  class User : public vault::Model<User> {
+  public:
+    User() : vault::Model<User>("users") {
+      this->add_field("name", vault::string, &this->name);
+      this->add_field("email", vault::string, &this->email);
+    }
+
+    std::string get_name() { return this->name;}
+    void set_name(std::string new_name) { this->name.assign(new_name); }
+    std::string get_email() { return this->email;}
+    void set_email(std::string new_email) { this->email.assign(new_email); }
+
+  protected:
+    std::string name;
+    std::string email;
+
   };
 
 
