@@ -5,6 +5,7 @@ namespace domoio {
 
     /* Postgres Connection */
     PGconn *conn;
+    PGconn *connection() { return conn; }
     static void exit_nicely(PGconn*);
 
 

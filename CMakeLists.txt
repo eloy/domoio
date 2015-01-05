@@ -150,6 +150,7 @@ set(TEST_SRC ${TEST_SRC}
   ./test/unit/httpd/server_test
   ./test/unit/httpd/request_test
   ./test/unit/httpd/httpd_action_test
+  ./test/unit/models/model_user_test
 )
 
 # Configure Google Test Lib
