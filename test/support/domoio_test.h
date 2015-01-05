@@ -1,8 +1,6 @@
 #ifndef DOMOIO_TEST_H
 #define DOMOIO_TEST_H
 #include <gtest/gtest.h>
-
-#define DOMOIO_CONFIG_FILE "config_test"
 #include "domoio.h"
 
 #define DOMOIO_ENV_TEST
