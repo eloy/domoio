@@ -1,0 +1,13 @@
+# Server Options
+domoio_port=8013
+http_port=8081
+
+# Database
+db_host=localhost
+db_name=domoio_development
+db_user=domoio
+db_password=domoio
+
+# JS
+js_system_path=/var/lib/domoio/jsengine/framework
+js_user_path=/var/local/domoio/jsengine
