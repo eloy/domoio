@@ -1,5 +1,10 @@
 #include "domoio.h"
 #include "database.h"
+#include "cajun/json/reader.h"
+#include "cajun/json/writer.h"
+#include "cajun/json/elements.h"
+
+
 #ifndef GENERATED_MODELS_H
 #define GENERATED_MODELS_H
 
@@ -98,6 +103,72 @@ namespace vault {
 
       return true;
     }
+
+
+    bool from_json_object(json::Object doc) {
+      for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
+        Field *field = *it;
+        switch (field->type) {
+        case integer: {
+          json::Number &v = doc[field->name];
+          int *f_int = (int*) field->ptr;
+          *f_int = v.Value();
+          break;
+        }
+        case string:{
+          json::String &v = doc[field->name];
+          std::string *f_str = (std::string*) field->ptr;
+          f_str->assign(v.Value());
+          break;
+        }
+        default:
+          LOG(error) << "Unknown type";
+          break;
+        }
+      }
+      return true;
+    }
+
+    json::Object to_json_object() {
+      json::Object self;
+      // Set the ID
+      self["id"] = json::Number(this->id);
+
+      for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
+        Field *field = *it;
+        switch (field->type) {
+        case integer: {
+          int *f_int = (int*) field->ptr;
+          self[field->name] = json::Number(*f_int);
+          break;
+        }
+        case string:{
+          std::string *f_str = (std::string*) field->ptr;
+          self[field->name] = json::String(f_str->c_str());
+          break;
+        }
+        default:
+          LOG(error) << "Unknown type";
+          break;
+        }
+      }
+      return self;
+    }
+
+    std::string to_json() {
+      std::stringstream ss;
+      json::Writer::Write(this->to_json_object(), ss);
+      return ss.str();
+    }
+
+    bool from_json(std::string str) {
+      json::Object doc;
+      std::stringstream ss(str);
+      json::Reader::Read(doc, ss);
+      return from_json_object(doc);
+    }
+
+
 
   protected:
     int id;
