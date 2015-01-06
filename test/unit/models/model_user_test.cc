@@ -28,3 +28,23 @@ TEST(UserModel, from_json) {
   ASSERT_EQ("foo", loaded.get_name());
   ASSERT_EQ("user@foo.bar", loaded.get_email());
 }
+
+
+TEST(UserModel, mem) {
+  domoio::User foo, bar;
+  foo.set_name("foo");
+  foo.set_email("foo@domoio.com");
+  foo.save();
+
+  bar.set_name("bar");
+  bar.set_email("bar@domoio.com");
+  bar.save();
+
+  vault::ModelsCollection<domoio::User> collection;
+  domoio::User::all(&collection);
+
+  domoio::User *first = collection.at(0);
+  domoio::User *last = collection.at(1);
+  ASSERT_EQ("foo", first->get_name());
+  ASSERT_EQ("bar", last->get_name());
+}

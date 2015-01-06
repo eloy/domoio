@@ -19,6 +19,59 @@ namespace vault {
     boolean
   };
 
+  template <class T> class Model;
+
+  template <class T> class ModelsCollection{
+    friend class Model<T>;
+  public:
+    ModelsCollection() {
+      this->size = 0;
+    }
+
+    ~ModelsCollection() {
+      for(int i=0; i < this->size; i++) {
+        T *model = this->models.back();
+        delete(model);
+        this->models.pop_back();
+      }
+    }
+
+    T *at(int index) {
+      return this->models.at(index);
+    }
+
+    json::Array to_json_array() {
+      json::Array array;
+      for(int i=0; i < this->size; i++) {
+        T *model = this->models.at(i);
+        array.Insert(model->to_json_object());
+      }
+      return array;
+    }
+
+    std::string to_json() {
+      std::stringstream ss;
+      json::Writer::Write(this->to_json_array(), ss);
+      return ss.str();
+    }
+
+  private:
+    int size;
+    std::vector<T*> models;
+
+    bool fill_from_res(PGresult *res) {
+      this->size = PQntuples(res);
+      for(int i=0; i < this->size; i++) {
+        T *model = new T();
+        model->load_from_res(res, i);
+        this->models.push_back(model);
+      }
+      return true;
+    }
+
+  };
+
+
   class Field {
   public:
   Field(const char* _name, data_type _type, void* _ptr) : name(_name), type(_type), ptr(_ptr) {}
@@ -28,13 +81,18 @@ namespace vault {
   };
 
 
-  template <class T>
-    class Model {
+  template <class T> class Model {
   public:
     Model(const char *_tablename) : tablename(_tablename) {
       this->id = 0;
     }
 
+    ~Model() {
+      for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
+        Field *field = *it;
+        delete(field);
+      }
+    }
     int get_id() { return id;}
 
     bool save() {
@@ -75,6 +133,7 @@ namespace vault {
       return true;
     }
 
+
     bool load_from_res(PGresult *res, int row=0) {
       for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
         Field *field = *it;
@@ -104,6 +163,33 @@ namespace vault {
       return true;
     }
 
+
+    static bool all(ModelsCollection<T> *collection) {
+      const char *values[] = {};
+      int paramLengths[] = {};
+      int paramFormats[] = {};
+
+      // Build tue query
+      std::string sql;
+      sql.append("select * from ").append(T::table_name());
+
+      PGresult *res = PQexecParams(domoio::db::connection(), sql.c_str(), 0, NULL, values, paramLengths, paramFormats, 0);
+
+      if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG(error) << "SQL ERROR: " << PQerrorMessage(domoio::db::connection());
+        PQclear(res);
+        return false;
+      }
+
+      collection->fill_from_res(res);
+      PQclear(res);
+      return true;
+    }
+
+    /**
+     * JSON STUFF
+     *----------------------------------------------------------------------------
+     */
 
     bool from_json_object(json::Object doc) {
       for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
@@ -168,14 +254,15 @@ namespace vault {
       return from_json_object(doc);
     }
 
-
-
   protected:
     int id;
+
+
     void add_field(const char *name, data_type type, void *ptr) {
       Field *f = new Field(name, type, ptr);
       this->fields.push_back(f);
     }
+
 
   private:
     std::vector<Field*> fields;
@@ -312,14 +399,12 @@ namespace domoio {
     void set_name(std::string new_name) { this->name.assign(new_name); }
     std::string get_email() { return this->email;}
     void set_email(std::string new_email) { this->email.assign(new_email); }
+    static const char* table_name(void) { return "users"; }
 
   protected:
     std::string name;
     std::string email;
-
   };
-
-
 }
 
 
