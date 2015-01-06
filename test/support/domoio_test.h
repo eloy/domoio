@@ -8,22 +8,6 @@
 namespace domoio {
   bool expect_events(int);
 
-  class TestEnvironment : public ::testing::Environment {
-  public:
-    virtual ~TestEnvironment() {}
-
-    virtual void SetUp() {
-      domoio::init_domoio();
-    }
-
-
-    virtual void TearDown() {
-      domoio::db::close();
-    }
-  };
-
-
-
   class FeatureTest  : public testing::Test {
   protected:
     virtual void SetUp() {

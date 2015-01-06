@@ -19,12 +19,21 @@ namespace domoio {
     void set(DeviceConnection *, CommandParams);
   }
 
-  void init_device_commands() {
+  void register_device_commands() {
     domoio::register_device_command("create_session", new DeviceCommandDef(&commands::create_session, 1, "Start session"));
     domoio::register_device_command("login", new DeviceCommandDef(&commands::login, 1, "Sign in"));
     domoio::register_device_command("aps", new DeviceCommandDef(&commands::all_ports_state, 2, "Update values for all ports"));
     domoio::register_device_command("exit", new DeviceCommandDef(&commands::exit, 0, "Exit"));
     domoio::register_device_command("set", new DeviceCommandDef(&commands::set, 2, "Set value at a port"));
+  }
+
+  void unregister_device_commands() {
+    std::map<std::string, DeviceCommandDef*>::iterator it;
+    for (it = device_commands.begin(); it != device_commands.end(); ++it) {
+      DeviceCommandDef* command = it->second;
+      delete(command);
+    }
+
   }
 
   // Dispatch Request from devices
@@ -57,11 +66,6 @@ namespace domoio {
     std::map<std::string, DeviceCommandDef*>::iterator iter;
     iter = device_commands.find(params[0]);
     if (iter == device_commands.end()) {
-      // LOG(info)<< "NOT found: " << iter->first;
-      std::map<std::string, DeviceCommandDef*>::iterator it;
-      for (it = device_commands.begin(); it != device_commands.end(); ++it) {
-        LOG(info) << "Registered: '" << it->first << "'";
-      }
       LOG(warning) << "Invalid device command '" << params[0] << "'";
       this->send("400 Bad Request");
       return false;

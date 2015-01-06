@@ -18,9 +18,25 @@ class DatabaseCleaner : public ::testing::EmptyTestEventListener {
 };
 
 
+
+class TestEnvironment : public ::testing::Environment {
+public:
+  virtual ~TestEnvironment() {}
+
+  virtual void SetUp() {
+    domoio::init_domoio();
+  }
+
+
+  virtual void TearDown() {
+    domoio::exit_domoio();
+  }
+};
+
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
-  ::testing::Environment* const env = ::testing::AddGlobalTestEnvironment(new domoio::TestEnvironment);
+  ::testing::Environment* const env = ::testing::AddGlobalTestEnvironment(new TestEnvironment);
 
   domoio::setup_config_options("config_test");
   domoio::prepare_config(argc, argv);
