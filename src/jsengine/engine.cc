@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 #include "helpers.h"
 #include "config.h"
-#include "models.h"
+#include "devices.h"
 #include "log.h"
 #include "events.h"
 #include "jsengine.h"

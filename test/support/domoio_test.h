@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <boost/asio.hpp>
 #include "domoio_server.h"
-#include "models.h"
+#include "devices.h"
 #include "events.h"
 #include "config.h"
 

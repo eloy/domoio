@@ -1,4 +1,4 @@
-#include "models.h"
+#include "devices.h"
 #include "domoio.h"
 #include <boost/foreach.hpp>
 namespace domoio {

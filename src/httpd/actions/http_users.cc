@@ -1,7 +1,7 @@
 #include "log.h"
-#include "models.h"
+#include "devices.h"
 #include "httpd.h"
-#include "data_mapper.h"
+#include "models.h"
 
 namespace domoio {
   namespace httpd {

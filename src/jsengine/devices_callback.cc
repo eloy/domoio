@@ -1,5 +1,5 @@
 #include <map>
-#include "models.h"
+#include "devices.h"
 #include "jsengine.h"
 
 namespace domoio {

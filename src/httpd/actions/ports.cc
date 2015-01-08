@@ -1,4 +1,4 @@
-#include "models.h"
+#include "devices.h"
 #include "httpd.h"
 
 namespace domoio {
