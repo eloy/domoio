@@ -5,6 +5,7 @@ namespace domoio {
 
     /* Postgres Connection */
     PGconn *conn;
+    PGconn *connection() { return conn; }
     static void exit_nicely(PGconn*);
 
 
@@ -31,5 +32,13 @@ namespace domoio {
     PGresult *exec(const char *command) {
       return PQexec(conn, command);
     }
+
+    bool exec_update(const char *command) {
+      PGresult *res = exec(command);
+      bool status = PQresultStatus(res) != PGRES_TUPLES_OK;
+      PQclear(res);
+      return status;
+    }
+
   }
 }

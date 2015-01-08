@@ -1,30 +1,12 @@
 #ifndef DOMOIO_TEST_H
 #define DOMOIO_TEST_H
 #include <gtest/gtest.h>
-
-#define DOMOIO_CONFIG_FILE "config_test"
 #include "domoio.h"
 
 #define DOMOIO_ENV_TEST
 
 namespace domoio {
   bool expect_events(int);
-
-  class TestEnvironment : public ::testing::Environment {
-  public:
-    virtual ~TestEnvironment() {}
-
-    virtual void SetUp() {
-      domoio::init_domoio();
-    }
-
-
-    virtual void TearDown() {
-      domoio::db::close();
-    }
-  };
-
-
 
   class FeatureTest  : public testing::Test {
   protected:

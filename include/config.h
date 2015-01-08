@@ -14,6 +14,9 @@ namespace domoio {
     extern int domoio_port;
     extern int http_port;
 
+    // Config file
+    extern std::string config_file_name;
+
     // DATABASE
     extern std::string db_name;
     extern std::string db_user;
@@ -26,7 +29,7 @@ namespace domoio {
   }
   // Config
   extern boost::program_options::variables_map conf;
-  void setup_config_options(void);
+  void setup_config_options(const char *default_config_file=DOMOIO_CONFIG_FILE);
   void prepare_config(int, char*[]);
 
 }

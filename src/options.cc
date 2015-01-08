@@ -9,9 +9,6 @@ namespace domoio {
   // Configuration
   po::variables_map conf;
 
-  // Config file
-  string config_file_name;
-
   // Variable Groups
   po::options_description generic("Generic options");
   po::options_description fileconf("Config File");
@@ -19,7 +16,6 @@ namespace domoio {
 
 
   void prepare_config(int argc, char* argv[]) {
-
     try {
       po::options_description cmdline_options;
       cmdline_options.add(generic).add(fileconf).add(hidden);
@@ -39,9 +35,9 @@ namespace domoio {
       store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), conf);
       notify(conf);
 
-      ifstream ifs(config_file_name.c_str());
+      ifstream ifs(conf_opt::config_file_name.c_str());
       if (!ifs) {
-        LOG(fatal) << "Can not open config file: " << config_file_name << "\n";
+        LOG(fatal) << "Can not open config file: " << conf_opt::config_file_name << "\n";
       } else {
         store(parse_config_file(ifs, config_file_options), conf);
         notify(conf);
@@ -65,6 +61,8 @@ namespace domoio {
     int domoio_port;
     int http_port;
 
+    // Config file
+    std::string config_file_name;
     std::string db_name;
     std::string db_user;
     std::string db_password;
@@ -75,11 +73,11 @@ namespace domoio {
   }
 
 
-  void setup_config_options(void) {
+  void setup_config_options(const char *default_config_file) {
 
     generic.add_options()
       ("help,h", "produce help message")
-      ("config,c", po::value<string>(&config_file_name)->default_value(DOMOIO_CONFIG_FILE), "config file.")
+      ("config,c", po::value<string>(&conf_opt::config_file_name)->default_value(default_config_file), "config file.")
       ;
 
     fileconf.add_options()

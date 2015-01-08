@@ -6,8 +6,9 @@ namespace domoio {
   namespace db {
     void connect(void);
     void close(void);
-
+    PGconn *connection();
     PGresult *exec(const char*);
+    bool exec_update(const char*);
   }
 }
 

@@ -138,8 +138,8 @@ namespace domoio {
 
 
   bool register_device_command(std::string, DeviceCommandDef*);
-  void init_device_commands();
-
+  void register_device_commands();
+  void unregister_device_commands();
 }
 
 
