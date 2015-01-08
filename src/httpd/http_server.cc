@@ -22,13 +22,17 @@ namespace domoio {
       DEF_HTTPD_ACTION(devices);
       DEF_HTTPD_ACTION(ports);
       DEF_HTTPD_ACTION(set_port);
+      DEF_HTTPD_ACTION(users);
     }
 
     void register_actions() {
+      register_action("/api/events", &actions::events);
+
       register_action("/api/devices/?:id?", &actions::devices);
       register_action("/api/devices/:device_id/ports/?:id?", &actions::ports);
       register_action("/api/devices/:device_id/ports/:id/set", &actions::set_port);
-      register_action("/api/events", &actions::events);
+
+      register_action("/api/users/?:id?", &actions::users);
     }
 
 
