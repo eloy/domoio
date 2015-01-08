@@ -3,7 +3,7 @@
 #include "cajun/json/reader.h"
 #include "cajun/json/writer.h"
 #include "cajun/json/elements.h"
-
+#include "boost/lexical_cast.hpp"
 
 #ifndef GENERATED_MODELS_H
 #define GENERATED_MODELS_H
@@ -383,29 +383,5 @@ namespace vault {
   };
 
 }
-
-
-
-namespace domoio {
-
-  class User : public vault::Model<User> {
-  public:
-    User() : vault::Model<User>("users") {
-      this->add_field("name", vault::string, &this->name);
-      this->add_field("email", vault::string, &this->email);
-    }
-
-    std::string get_name() { return this->name;}
-    void set_name(std::string new_name) { this->name.assign(new_name); }
-    std::string get_email() { return this->email;}
-    void set_email(std::string new_email) { this->email.assign(new_email); }
-    static const char* table_name(void) { return "users"; }
-
-  protected:
-    std::string name;
-    std::string email;
-  };
-}
-
 
 #endif //GENERATED_MODELS_H

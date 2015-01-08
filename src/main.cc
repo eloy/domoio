@@ -1,4 +1,7 @@
 #include "domoio.h"
+#include "database.h"
+#include "config.h"
+#include "domoio_server.h"
 #include "jsengine.h"
 #include "httpd.h"
 #include <sys/resource.h>

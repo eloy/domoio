@@ -1,4 +1,6 @@
-#include "domoio.h"
+#include "models.h"
+#include "events.h"
+#include "domoio_server.h"
 
 namespace domoio {
 

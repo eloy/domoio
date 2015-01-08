@@ -2,6 +2,8 @@
 #define MODELS_H
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "data_mapper.h"
+#include <boost/signals2.hpp>
 #include "jsengine.h"
 #include "json.h"
 
@@ -121,6 +123,32 @@ namespace domoio {
   const std::map<int, Device*> *all_devices();
   bool device_set_port_state(std::string, int);
   std::string devices_to_json();
+
+
+
+  // ------------------------------------------
+
+
+
+  class User : public vault::Model<User> {
+  public:
+  User() : vault::Model<User>("users") {
+      this->add_field("name", vault::string, &this->name);
+      this->add_field("email", vault::string, &this->email);
+    }
+
+    std::string get_name() { return this->name;}
+    void set_name(std::string new_name) { this->name.assign(new_name); }
+    std::string get_email() { return this->email;}
+    void set_email(std::string new_email) { this->email.assign(new_email); }
+    static const char* table_name(void) { return "users"; }
+
+  protected:
+    std::string name;
+    std::string email;
+  };
+
+
 }
 
 #endif //MODELS_H

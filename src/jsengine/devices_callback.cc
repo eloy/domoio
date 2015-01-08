@@ -1,4 +1,5 @@
-#include "domoio.h"
+#include <map>
+#include "models.h"
 #include "jsengine.h"
 
 namespace domoio {

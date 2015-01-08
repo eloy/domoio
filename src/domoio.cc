@@ -1,4 +1,6 @@
-#include "domoio.h"
+#include "domoio_server.h"
+#include "database.h"
+#include "log.h"
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>

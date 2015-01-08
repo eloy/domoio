@@ -1,5 +1,7 @@
-#include "domoio.h"
+#include "log.h"
+#include "events.h"
 #include "httpd.h"
+#include <boost/thread.hpp>
 
 #define BUFFER_SIZE 3072
 

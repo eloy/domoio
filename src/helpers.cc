@@ -1,4 +1,4 @@
-#include "domoio.h"
+#include <sys/stat.h>
 #include "helpers.h"
 
 namespace domoio {

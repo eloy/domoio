@@ -1,7 +1,12 @@
+#include <gtest/gtest.h>
+#include <boost/asio.hpp>
+#include "domoio_server.h"
+#include "models.h"
+#include "events.h"
+#include "config.h"
+
 #ifndef DOMOIO_TEST_H
 #define DOMOIO_TEST_H
-#include <gtest/gtest.h>
-#include "domoio.h"
 
 #define DOMOIO_ENV_TEST
 

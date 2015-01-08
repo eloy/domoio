@@ -1,4 +1,5 @@
-#include "domoio.h"
+#include "domoio_server.h"
+#include <boost/algorithm/string/trim.hpp>
 
 namespace domoio {
   // Register Server Commands

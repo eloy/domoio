@@ -1,4 +1,7 @@
 #include "domoio.h"
+#include <string>
+#include "crypt.h"
+
 // http://cdmweb.de/openssl_aes.c.txt
 
 

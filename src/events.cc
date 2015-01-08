@@ -1,5 +1,6 @@
-#include "domoio.h"
+#include "events.h"
 #include "json.h"
+#include <boost/thread.hpp>
 
 namespace domoio {
   namespace events {

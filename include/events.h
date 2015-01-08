@@ -1,3 +1,9 @@
+#include <boost/asio.hpp>
+#include <boost/signals2.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "models.h"
+
 #ifndef EVENTS_H
 #define EVENTS_H
 

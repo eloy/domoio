@@ -1,4 +1,7 @@
-#include "domoio.h"
+#include <string>
+#include <sstream>
+#include "crypt.h"
+
 namespace domoio {
   namespace crypto {
 

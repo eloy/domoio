@@ -1,5 +1,6 @@
+#include "models.h"
 #include "domoio.h"
-
+#include <boost/foreach.hpp>
 namespace domoio {
 
   std::map<int, Device*> devices;

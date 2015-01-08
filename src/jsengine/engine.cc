@@ -1,4 +1,11 @@
-#include "domoio.h"
+#include <boost/asio.hpp>
+#include <boost/signals2.hpp>
+#include <boost/thread.hpp>
+#include "helpers.h"
+#include "config.h"
+#include "models.h"
+#include "log.h"
+#include "events.h"
 #include "jsengine.h"
 #include <map>
 

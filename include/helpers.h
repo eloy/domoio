@@ -1,3 +1,7 @@
+#include <cstdlib>
+#include <cstdio>
+#include <string>
+
 #ifndef HELPERS_H
 #define HELPERS_H
 

@@ -1,12 +1,12 @@
 #include "domoio_test.h"
-
+#include "boost/lexical_cast.hpp"
 
 namespace domoio {
 
   bool TestDevice::connect(void) {
     try {
       boost::asio::ip::tcp::resolver resolver(io_service);
-      boost::asio::ip::tcp::resolver::query query("127.0.0.1", boost::to_string(conf_opt::domoio_port));
+      boost::asio::ip::tcp::resolver::query query("127.0.0.1", boost::lexical_cast<std::string>(conf_opt::domoio_port));
       boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
       boost::asio::connect(socket, endpoint_iterator);
     }
