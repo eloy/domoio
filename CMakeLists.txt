@@ -108,7 +108,7 @@ set(SRC ${SRC}
   ./src/httpd/request
   ./src/httpd/httpd_action
   ./src/httpd/actions/http_events
-  ./src/httpd/actions/devices
+  ./src/httpd/actions/http_devices
   ./src/httpd/actions/ports
   ./src/httpd/actions/http_users
   )
@@ -152,6 +152,7 @@ set(TEST_SRC ${TEST_SRC}
   ./test/unit/httpd/request_test
   ./test/unit/httpd/httpd_action_test
   ./test/unit/models/model_user_test
+  ./test/unit/models/model_device_test
 )
 
 # Configure Google Test Lib

@@ -1,5 +1,6 @@
-#include "domoio_test.h"
-#include "data_mapper.h"
+#include <gtest/gtest.h>
+#include "models.h"
+
 
 TEST(UserModel, save) {
   domoio::User user;

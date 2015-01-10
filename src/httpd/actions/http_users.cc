@@ -1,5 +1,4 @@
 #include "log.h"
-#include "devices.h"
 #include "httpd.h"
 #include "models.h"
 
