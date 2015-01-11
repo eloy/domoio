@@ -18,6 +18,7 @@ namespace domoio {
     std::string get_email() { return this->email;}
     void set_email(std::string new_email) { this->email.assign(new_email); }
 
+    virtual User* clone() const { return new User(*this); }
 
   protected:
     std::string name;
@@ -28,31 +29,34 @@ namespace domoio {
 
 
 
-  class PPort : public vault::Model<PPort> {
+
+
+
+
+
+  class Port : public vault::Model<Port> {
   public:
-    PPort() : vault::Model<PPort>() {
+  Port() : vault::Model<Port>() {
       this->add_field("name", vault::string, &this->name);
       this->add_field("digital", vault::boolean, &this->digital);
       this->add_field("output", vault::boolean, &this->output);
     }
-  protected:
     std::string name;
     bool digital;
     bool output;
-
   };
 
 
   class Specifications : public vault::Model<Specifications> {
   public:
-    Specifications() : vault::Model<Specifications>() {
+  Specifications() : vault::Model<Specifications>() {
       this->add_field("serial", vault::string, &this->serial);
       this->add_field("manufacturer", vault::string, &this->manufacturer_raw);
       this->add_field("model", vault::string, &this->model_raw);
       this->add_field("description", vault::string, &this->description);
     }
 
-    vault::ModelsCollection<PPort> ports;
+    vault::ModelsCollection<Port> ports;
     std::string serial;
     std::string manufacturer_raw;
     std::string model_raw;
@@ -60,12 +64,12 @@ namespace domoio {
 
   protected:
     virtual void after_from_json_object(json::Object doc) {
+      LOG(error) << "FROM JSON: spe";
       json::Array ports = doc["ports"];
       this->ports.from_json_array(ports);
     }
 
     virtual void after_to_json_object(json::Object *doc) {
-      LOG(error) << this->ports.to_json();
       (*doc)["ports"] = this->ports.to_json_array();
     }
   };
@@ -73,22 +77,35 @@ namespace domoio {
 
 
 
-  class Pollo : public vault::Model<Pollo> {
+  class Device : public vault::Model<Device> {
   public:
     static const char* table_name(void) { return "devices"; }
-    Pollo() : vault::Model<Pollo>() {
+  Device() : vault::Model<Device>() {
       this->add_field("label", vault::string, &this->label);
+      this->add_field("password", vault::string, &this->password, (vault::DB | vault::FROM_JSON));
       this->add_field("specifications", vault::string, &this->specifications_raw, (vault::DB | vault::FROM_JSON));
       this->add_field("config", vault::string, &this->config_raw, (vault::DB | vault::FROM_JSON));
       this->add_field("type", vault::string, &this->type);
     }
+    const Specifications *get_specifications() { return &this->specifications; }
 
     std::string label;
+    std::string password;
     std::string specifications_raw;
+
+    bool is_virtual() { return this->type == "VirtualDevice"; }
+
   protected:
     virtual bool after_load(PGresult *res, int row) {
       this->specifications.from_json(this->specifications_raw);
       return true;
+    }
+
+    virtual void after_from_json_object(json::Object doc) {
+      LOG(error) << "FROM JSON: " << this->specifications_raw;
+      json::Object specs = doc["specifications"];
+      this->specifications.from_json_object(specs);
+      this->specifications_raw.assign(this->specifications.to_json());
     }
 
     virtual void after_to_json_object(json::Object *doc) {
@@ -99,6 +116,8 @@ namespace domoio {
     std::string type;
     Specifications specifications;
   };
+
+
 
 }
 

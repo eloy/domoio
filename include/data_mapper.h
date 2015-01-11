@@ -3,6 +3,7 @@
 #include "cajun/json/reader.h"
 #include "cajun/json/writer.h"
 #include "cajun/json/elements.h"
+#include <boost/thread/mutex.hpp>
 #include "boost/lexical_cast.hpp"
 
 #ifndef GENERATED_MODELS_H
@@ -34,24 +35,31 @@ namespace vault {
     friend class Model<T>;
   public:
     ModelsCollection() {
-      this->size = 0;
+      this->length = 0;
     }
 
     ~ModelsCollection() {
-      for(int i=0; i < this->size; i++) {
-        T *model = this->models.back();
+      this->models_mutex.lock();
+      typename std::vector<T*>::iterator it = this->models.begin();
+      while(it != this->models.end()) {
+        T *model = *it;
         delete(model);
-        this->models.pop_back();
+        it = this->models.erase(it);
       }
+      this->models_mutex.unlock();
     }
+
+    int size() {return this->length;}
 
     T *at(int index) {
       return this->models.at(index);
     }
 
+
+
     json::Array to_json_array() {
       json::Array array;
-      for(int i=0; i < this->size; i++) {
+      for(int i=0; i < this->length; i++) {
         T *model = this->models.at(i);
         array.Insert(model->to_json_object());
       }
@@ -67,7 +75,7 @@ namespace vault {
         this->models.push_back(model);
       }
 
-      this->size = this->models.size();
+      this->length = this->models.size();
     }
 
 
@@ -86,23 +94,34 @@ namespace vault {
       return true;
     }
 
+    // ITERATOR
+    typename std::vector<T*>::iterator begin() {
+      return this->models.begin();
+    }
+
+    typename std::vector<T*>::iterator end() {
+      return this->models.end();
+    }
 
   private:
-    int size;
+    int length;
     std::vector<T*> models;
+    boost::mutex models_mutex;
 
     bool fill_from_res(PGresult *res) {
-      this->size = PQntuples(res);
-      for(int i=0; i < this->size; i++) {
+      this->models_mutex.lock();
+      this->length = PQntuples(res);
+      for(int i=0; i < this->length; i++) {
         T *model = new T();
         model->load_from_res(res, i);
         this->models.push_back(model);
       }
+
+      this->models_mutex.unlock();
       return true;
     }
 
   };
-
 
   class Field {
   public:
@@ -212,11 +231,18 @@ namespace vault {
         return false;
       }
 
+      if (PQntuples(res) != 1) {
+        LOG(trace) << "SQL LOAD_FROM_DB: Expected 1 record, but " << PQntuples(res) << " found";
+        PQclear(res);
+        return false;
+      }
+
       this->load_from_res(res);
       PQclear(res);
       return true;
     }
 
+    virtual Model<T>* clone() const { return 0; }
 
     bool load_from_res(PGresult *res, int row=0) {
       for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {

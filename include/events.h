@@ -69,39 +69,43 @@ namespace domoio {
     Event() {}
 
     Event(events::type _type, events::channel _channel) : type(_type), channel(_channel) {
-      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+      this->initialize();
     }
 
     Event(events::type _type, events::channel _channel, int _old_value) :
       type(_type), channel(_channel), old_value(_old_value) {
-      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+      this->initialize();
     }
 
-    Event(events::type _type, events::channel _channel, Device*  _device) :
+    Event(events::type _type, events::channel _channel, DeviceState*  _device) :
       type(_type), channel(_channel), device(_device) {
-      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+      this->initialize();
     }
 
     Event(events::type _type, events::channel _channel, int _old_value, int _new_value) :
       type(_type), channel(_channel), old_value(_old_value), new_value(_new_value) {
-      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+      this->initialize();
     }
 
-    Event(events::type _type, events::channel _channel, Device *_device, Port*_port, int _old_value, int _new_value) :
+    Event(events::type _type, events::channel _channel, DeviceState *_device, PortState *_port, int _old_value, int _new_value) :
       type(_type), channel(_channel), device(_device), port(_port), old_value(_old_value), new_value(_new_value) {
-      date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+      this->initialize();
     }
 
-    std::string to_json();
+    std::string json;
     std::string channel_name();
 
     events::type type;
     events::channel channel;
-    Port *port;
-    Device *device;
+    PortState *port;
+    DeviceState *device;
     int old_value;
     int new_value;
     std::string date;
+
+  private:
+    void initialize();
+    std::string to_json();
   };
 
 }

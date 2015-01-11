@@ -38,6 +38,8 @@ namespace domoio {
       this->session_started = false;
     }
 
+    ~TestDevice();
+
     bool connect(void);
     bool login(void);
     bool close(void);
@@ -92,8 +94,8 @@ namespace domoio {
 
 
   // FACTORIES
-  extern std::map<int, Device*> devices;
-  NetworkDevice *factory_network_device(int, const char*, const char*);
+  // extern std::map<int, Device*> devices;
+  Device *factory_device(const char*, const char*, bool virt=false);
 
 }
 

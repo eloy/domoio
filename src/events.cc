@@ -67,6 +67,12 @@ namespace domoio {
   }
 
 
+  void Event::initialize() {
+    this->date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+    this->json.assign(this->to_json());
+  }
+
+
   std::string Event::to_json() {
     json::Object ev;
 

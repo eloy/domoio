@@ -6,7 +6,6 @@ namespace domoio {
   std::map<std::string, DeviceCommandDef*> device_commands;
 
   bool register_device_command(std::string name, DeviceCommandDef *def) {
-    LOG(trace) << "Registering device command: '" << name << "'";
     device_commands[name] = def;
     return true;
   }

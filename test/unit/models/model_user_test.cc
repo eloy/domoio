@@ -49,3 +49,16 @@ TEST(UserModel, mem) {
   ASSERT_EQ("foo", first->get_name());
   ASSERT_EQ("bar", last->get_name());
 }
+
+TEST(UserModel, clone) {
+  // domoio::User *foo = new domoio::User();
+  // foo->set_name("foo");
+  // foo->set_email("foo@domoio.com");
+
+  // domoio::User *bar;
+  // bar = foo->clone();
+  // delete(foo);
+  // ASSERT_EQ("foo", bar->get_name());
+  // ASSERT_EQ("foo@domoio.com", bar->get_email());
+  // delete(bar);
+}

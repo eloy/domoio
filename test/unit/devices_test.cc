@@ -1,30 +1,22 @@
+#include "models.h"
 #include "domoio_test.h"
 
-const char *SPECIFICATIONS = "{\"serial\":\"1234\",\"manufacturer\":\"0x01\",\"model\":\"0x01\",\"description\":\"Alargadera 4 puertos\",\"ports\":[{\"id\":0,\"name\":\"dio01\",\"digital\":true,\"output\":true},{\"id\":1,\"name\":\"dio02\",\"digital\":true,\"output\":true},{\"id\":2,\"name\":\"dio03\",\"digital\":true,\"output\":true},{\"id\":3,\"name\":\"dio04\",\"digital\":true,\"output\":true}]}\n";
+TEST(DeviceState, find) {
+  domoio::Device *m_device_1 = domoio::factory_device("foo", "password", true);
+  m_device_1->save();
+  domoio::Device *m_device_2 = domoio::factory_device("bar", "password");
+  m_device_2->save();
+  domoio::DeviceState::load_virtual_devices();
 
-TEST(Devices, load_devices) {
-  domoio::load_devices();
-  domoio::free_devices();
-}
+  domoio::DeviceState * device_1 = domoio::DeviceState::find(m_device_1->get_id());
+  EXPECT_EQ(device_1->id, m_device_1->get_id());
 
+  domoio::DeviceState * device_2 = domoio::DeviceState::find(m_device_2->get_id());
+  EXPECT_EQ(NULL, device_2);
 
-TEST(Devices, DeviceConstructor) {
-  domoio::NetworkDevice device (1, "test device", SPECIFICATIONS, "foo");
-  EXPECT_EQ(device.serial, "1234");
-  EXPECT_EQ(device.ports_count(), 4);
-}
+  domoio::DeviceState::unload_devices();
 
-
-TEST(Devices, DeviceFind) {
-  domoio::NetworkDevice *m_device_1 = domoio::factory_network_device(1, "foo", "password");
-  domoio::NetworkDevice *m_device_2 = domoio::factory_network_device(2, "bar", "password");
-
-  domoio::Device * device_1 = domoio::device_find(1);
-  EXPECT_EQ(device_1->id, 1);
-
-  domoio::Device * device_2 = domoio::device_find(2);
-  EXPECT_EQ(device_2->id, 2);
-
+  LOG(error) << m_device_1->to_json();
   delete(m_device_1);
   delete(m_device_2);
 }

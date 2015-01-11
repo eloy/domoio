@@ -1,4 +1,6 @@
+#include "models.h"
 #include "domoio_test.h"
+#include "boost/lexical_cast.hpp"
 
 TEST(CreateSession, invalid_device) {
   domoio::start_server();
@@ -17,18 +19,25 @@ TEST(CreateSession, invalid_device) {
 
 TEST(CreateSession, valid_device) {
   const char *password = "0123456789abcdef";
-  domoio::NetworkDevice *m_device = domoio::factory_network_device(1, "foo", password);
+  domoio::Device *m_device = domoio::factory_device("foo", password);
+  m_device->save();
+  int id = m_device->get_id();
+  delete(m_device);
 
+  domoio::DeviceState::load_virtual_devices();
 
   domoio::start_server();
   boost::asio::io_service io_service;
 
-  domoio::TestDevice device(io_service, 1, password);
+  domoio::TestDevice device(io_service, id, password);
   device.connect();
   device.read();
   device.assert_data_eq("Hey, protocol=1.0\n");
-  device.send("create_session 1");
+  std::string create_session;
+  create_session.append("create_session ").append(boost::lexical_cast<std::string>(id));
+  device.send(create_session);
   device.read();
+
   device.start_session(device.get_data());
   device.send("login 1234");
   device.read();

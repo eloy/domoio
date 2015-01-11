@@ -3,6 +3,13 @@
 
 namespace domoio {
 
+  TestDevice::~TestDevice() {
+    if(this->session_started ) {
+      delete(this->block_cipher);
+    }
+  }
+
+
   bool TestDevice::connect(void) {
     try {
       boost::asio::ip::tcp::resolver resolver(io_service);

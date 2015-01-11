@@ -1,3 +1,4 @@
+#include "models.h"
 #include "domoio_server.h"
 
 namespace domoio {
@@ -14,6 +15,7 @@ namespace domoio {
   DeviceConnection::~DeviceConnection(void) {
     if (this->device != 0) {
       this->unregister_device_signals();
+      DeviceState::disconnect(this->device->id);
     }
 
     if (this->block_cipher != 0) {
@@ -170,18 +172,28 @@ namespace domoio {
 
 
   bool DeviceConnection::create_session(int device_id) {
-    this->device = NetworkDevice::find(device_id);
-    if (!this->device) {
-      this->send("406 Not Acceptable");
-      return false;
+    // Check if there any connection active
+    this->device= DeviceState::find(device_id);
+
+    if (this->device!= NULL) {
+      LOG(error) << "TODO:: DELETE CONNECTIONS!!!";
     }
 
-    // Create Block Cipher
-    this->block_cipher = new domoio::crypto::BlockCipher(this->device->password);
+    Device device_model;
+
+    if (device_model.load_from_db(device_id) != true) {
+        this->send("406 Not Acceptable");
+        return false;
+    }
+
+    this->device = DeviceState::connect(&device_model);
+
+    // // Create Block Cipher
+    this->block_cipher = new domoio::crypto::BlockCipher(device_model.password);
     this->send(this->block_cipher->session_string().c_str());
     this->session_started = true;
 
-    // Send event
+    // // Send event
     events::send(new Event(events::device_connected, events::private_channel, this->device));
     return true;
   }

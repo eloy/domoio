@@ -48,14 +48,14 @@ namespace domoio {
     bool close();
     bool create_session(int);
     bool execute_callback(std::vector<std::string>);
-    NetworkDevice* get_device() { return this->device; }
+    DeviceState* get_device() { return this->device; }
 
   private:
     boost::asio::ip::tcp::socket socket;
     char data[CLIENT_BUFFER_MAX_LENGTH];
     std::deque<std::string> message_queue;
 
-    NetworkDevice *device;
+    DeviceState *device;
     domoio::crypto::BlockCipher *block_cipher;
     bool session_started;
     bool logged_in;

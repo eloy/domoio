@@ -1,3 +1,4 @@
+#include "models.h"
 #include "devices.h"
 #include "jsengine.h"
 
@@ -13,7 +14,7 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      int value = static_cast<Port*>(ptr)->id();
+      int value = static_cast<Port*>(ptr)->get_id();
       info.GetReturnValue().Set(value);
     }
 
@@ -23,7 +24,7 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      std::string value = static_cast<Port*>(ptr)->name();
+      std::string value = static_cast<Port*>(ptr)->name;
       info.GetReturnValue().Set(String::NewFromUtf8(isolate, value.c_str()));
     }
 
@@ -33,8 +34,8 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      int value = static_cast<Port*>(ptr)->id();
-      bool digital = static_cast<Port*>(ptr)->digital();
+      int value = static_cast<Port*>(ptr)->get_id();
+      bool digital = static_cast<Port*>(ptr)->digital;
       if (digital) {
         if (value > 0) {
           info.GetReturnValue().Set(true);
@@ -54,7 +55,6 @@ namespace domoio {
       int value_int;
       Port *port = static_cast<Port*>(ptr);
       // TODO: Check port is input
-
       if (value->IsBoolean()) {
         // TODO: Check if port is digital
         if (value->BooleanValue()) {
@@ -68,7 +68,8 @@ namespace domoio {
         value_int = value->Int32Value();
       }
 
-      port->set_value(value_int);
+      // TODO: Implement
+      // port->set_value(value_int);
     }
 
     Local<ObjectTemplate> create_port_template(v8::Isolate *isolate) {

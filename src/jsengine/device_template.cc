@@ -1,3 +1,4 @@
+#include "models.h"
 #include "devices.h"
 #include "jsengine.h"
 
@@ -13,7 +14,7 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      int value = static_cast<Device*>(ptr)->id;
+      int value = static_cast<Device*>(ptr)->get_id();
       info.GetReturnValue().Set(value);
     }
 
@@ -40,31 +41,33 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      std::map<int, Port*> *ports_map = static_cast<Device*>(ptr)->get_ports();
+      // TODO: implement
+
+      // std::map<int, Port*> *ports_map = static_cast<Device*>(ptr)->get_ports();
 
 
-      v8::Isolate* isolate = info.GetIsolate();
+      // v8::Isolate* isolate = info.GetIsolate();
 
-      EscapableHandleScope handle_scope(isolate);
-      Local<Array> array = Array::New(isolate, ports_map->size());
+      // EscapableHandleScope handle_scope(isolate);
+      // Local<Array> array = Array::New(isolate, ports_map->size());
 
-      // Return an empty result if there was an error creating the array.
-      if (array.IsEmpty()) {
-        info.GetReturnValue().Set(Local<Array>());
-        return;
-      }
+      // // Return an empty result if there was an error creating the array.
+      // if (array.IsEmpty()) {
+      //   info.GetReturnValue().Set(Local<Array>());
+      //   return;
+      // }
 
 
-      Local<ObjectTemplate> port_templ = create_port_template(isolate);
+      // Local<ObjectTemplate> port_templ = create_port_template(isolate);
 
-      int index = 0;
-      for (std::map<int, Port*>::iterator it = ports_map->begin(); it != ports_map->end(); ++it) {
-        Port *port = it->second;
-        Local<Object> obj = port_templ->NewInstance();
-        obj->SetInternalField(0, External::New(isolate, port));
-        array->Set(index++, obj);
-      }
-      info.GetReturnValue().Set(handle_scope.Escape(array));
+      // int index = 0;
+      // for (std::map<int, Port*>::iterator it = ports_map->begin(); it != ports_map->end(); ++it) {
+      //   Port *port = it->second;
+      //   Local<Object> obj = port_templ->NewInstance();
+      //   obj->SetInternalField(0, External::New(isolate, port));
+      //   array->Set(index++, obj);
+      // }
+      // info.GetReturnValue().Set(handle_scope.Escape(array));
     }
 
 

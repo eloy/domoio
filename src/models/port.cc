@@ -4,7 +4,7 @@
 
 namespace domoio {
 
-  void Port::set_value(bool new_value) {
+  void PortState::set_value(bool new_value) {
     int value;
     if (new_value) {
       value = 1;
@@ -14,7 +14,7 @@ namespace domoio {
     this->set_value(value);
   }
 
-  void Port::set_value(int new_value, bool silent) {
+  void PortState::set_value(int new_value, bool silent) {
 
     if (this->value() == new_value) return;
 
@@ -32,24 +32,9 @@ namespace domoio {
     this->_value = new_value;
   }
 
-  bool Port::send_to_device(const char *data) {
+  bool PortState::send_to_device(const char *data) {
     this->device->network_signals(data);
     return true;
   }
 
-  void Port::to_json_object(json::Object &d) {
-    d["id"] = json::Number(this->_id);
-    d["name"] = json::String(this->_name);
-    d["digital"] = json::Boolean(this->digital());
-    d["output"] = json::Boolean(this->output());
-    if (this->digital()) {
-      if (this->value() > 0) {
-        d["value"] = json::Boolean(true);
-      } else {
-        d["value"] = json::Boolean(false);
-      }
-    } else {
-      d["value"] = json::Number(this->value());
-    }
-  }
 }

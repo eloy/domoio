@@ -334,7 +334,7 @@ namespace domoio {
       TryCatch try_catch;
       v8::Local<v8::Function> process = v8::Local<v8::Function>::New(GetIsolate(), trigger_event_process);
 
-      Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), event->to_json().c_str())};
+      Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), event->json.c_str())};
       // Handle<Value> argv[2] = {String::NewFromUtf8(GetIsolate(), event->channel_name().c_str()), String::NewFromUtf8(GetIsolate(), "pollo")};
       Handle<Value> result = process->Call(context->Global(), 2, argv);
 
