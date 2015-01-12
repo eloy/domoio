@@ -24,6 +24,7 @@ namespace vault {
 
   enum data_type {
     string,
+    text,
     integer,
     number,
     boolean
@@ -260,11 +261,13 @@ namespace vault {
             *f_int = atoi(PQgetvalue(res, row, index));
             break;
           }
-          case string:{
+          case string:
+          case text: {
             std::string *f_str = (std::string*) field->ptr;
             f_str->assign(PQgetvalue(res, row, index));
             break;
           }
+
           default:
             return false;
             break;
@@ -320,7 +323,8 @@ namespace vault {
             *f_int = v.Value();
             break;
           }
-          case string:{
+          case string:
+          case text: {
             json::String &v = doc[field->name];
             std::string *f_str = (std::string*) field->ptr;
             f_str->assign(v.Value());
@@ -340,7 +344,7 @@ namespace vault {
       }
 
       // Run callback
-      this->after_from_json_object(doc);
+      this->after_from_json_object(&doc);
       return true;
     }
 
@@ -360,7 +364,8 @@ namespace vault {
             self[field->name] = json::Number(*f_int);
             break;
           }
-          case string:{
+          case string:
+          case text: {
             std::string *f_str = (std::string*) field->ptr;
             self[field->name] = json::String(f_str->c_str());
             break;
@@ -411,7 +416,7 @@ namespace vault {
      *----------------------------------------------------------------------------
      */
 
-    virtual void after_from_json_object(json::Object doc) { }
+    virtual void after_from_json_object(json::Object *doc) { }
     virtual void after_to_json_object(json::Object *doc) { }
     virtual bool before_save() { return true; }
     virtual bool after_save() { return true; }
@@ -470,6 +475,15 @@ namespace vault {
             values_sql.append("::char(255)");
             break;
           }
+          case text:{
+            std::string *f_str = (std::string*) field->ptr;
+            values[i] = f_str->c_str();
+            paramLengths[i] = sizeof(char*);
+            paramFormats[i] = 0;
+            values_sql.append("::text");
+            break;
+          }
+
           default:
             return false;
             break;
@@ -553,6 +567,15 @@ namespace vault {
             set_sql.append("::char(255)");
             break;
           }
+          case text:{
+            std::string *f_str = (std::string*) field->ptr;
+            values[i] = f_str->c_str();
+            paramLengths[i] = sizeof(char*);
+            paramFormats[i] = 0;
+            set_sql.append("::text");
+            break;
+          }
+
           default:
             return false;
             break;
