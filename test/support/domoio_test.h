@@ -96,7 +96,7 @@ namespace domoio {
   // FACTORIES
   // extern std::map<int, Device*> devices;
   Device *factory_device(const char*, const char*, bool virt=false);
-
+  void load_device(Device *device, const char*, const char*, bool virt=false);
 }
 
 #endif //DOMOIO_TEST_H

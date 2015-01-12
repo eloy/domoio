@@ -65,7 +65,7 @@ namespace domoio {
     static void disconnect(int device_id);
 
     int ports_count() { return this->ports.size(); }
-    PortState *port(int id) { return this->ports[id]; }
+    PortState *port(int id);
 
     // Type
     bool is_network_device() { return !this->is_virtual; }

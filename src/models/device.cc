@@ -7,6 +7,11 @@ namespace domoio {
 
   using namespace vault;
 
+  void Port::after_from_json_object(json::Object *doc) {
+    json::Number port_id = (*doc)["id"];
+    this->id = port_id.Value();
+  }
+
 
   void Specifications::after_from_json_object(json::Object *doc) {
     json::Array ports = (*doc)["ports"];
@@ -76,6 +81,16 @@ namespace domoio {
     std::map<int,DeviceState *>::iterator it;
     it = DeviceState::active_devices.find(device_id);
     if (it == DeviceState::active_devices.end()) {
+      return NULL;
+    }
+    return it->second;
+  }
+
+
+  PortState *DeviceState::port(int id) {
+    std::map<int,PortState *>::iterator it;
+    it = this->ports.find(id);
+    if (it == this->ports.end()) {
       return NULL;
     }
     return it->second;

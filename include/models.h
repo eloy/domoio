@@ -38,6 +38,8 @@ namespace domoio {
     std::string name;
     bool digital;
     bool output;
+  private:
+    virtual void after_from_json_object(json::Object *doc);
   };
 
 
