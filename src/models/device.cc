@@ -36,6 +36,31 @@ namespace domoio {
 
   void Device::after_to_json_object(json::Object *doc) {
     (*doc)["specifications"] = this->specifications.to_json_object();
+
+    DeviceState *state = DeviceState::find(this->get_id());
+    bool connected = (state != NULL);
+    (*doc)["connected"] = json::Boolean(connected);
+
+    // Build ports with info from specifications, config and state
+    json::Array ports;
+
+    for(std::vector<Port*>::iterator it = this->specifications.ports.begin(); it != this->specifications.ports.end(); ++it) {
+      Port *port = *it;
+      json::Object obj = port->to_json_object();
+
+      if (connected) {
+        PortState *port_state = state->port(port->get_id());
+        if (port_state != NULL) {
+          port_state->to_json_object(obj);
+        }
+      }
+
+      ports.Insert(obj);
+    }
+
+    (*doc)["ports"] = ports;
+
+
   }
 
   std::map<int, DeviceState*> DeviceState::active_devices;

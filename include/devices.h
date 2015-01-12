@@ -45,6 +45,7 @@ namespace domoio {
   };
 
   class DeviceState {
+    friend class Device;
   private:
 
     DeviceState(Device *);

@@ -37,4 +37,18 @@ namespace domoio {
     return true;
   }
 
+  void PortState::to_json_object(json::Object &d) {
+    // d["id"] = json::Number(this->_id);
+    // d["digital"] = json::Boolean(this->digital());
+    // d["output"] = json::Boolean(this->output());
+    if (this->digital()) {
+      if (this->value() > 0) {
+        d["value"] = json::Boolean(true);
+      } else {
+        d["value"] = json::Boolean(false);
+      }
+    } else {
+      d["value"] = json::Number(this->value());
+    }
+  }
 }

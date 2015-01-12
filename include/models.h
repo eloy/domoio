@@ -45,6 +45,7 @@ namespace domoio {
 
   class Specifications : public vault::Model<Specifications> {
     friend class DeviceState;
+    friend class Device;
   public:
   Specifications() : vault::Model<Specifications>() {
       this->add_field("serial", vault::string, &this->serial);
