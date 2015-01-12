@@ -96,8 +96,10 @@ namespace domoio {
   bool DeviceConnection::close() {
     this->socket.close();
 
-    // Send event
-    events::send(new Event(events::device_disconnected, events::private_channel, this->device));
+    // Send event if session started
+    if (this->session_started) {
+      events::send(new Event(events::device_disconnected, events::private_channel, this->device));
+    }
 
     return true;
   }
@@ -194,7 +196,7 @@ namespace domoio {
     this->session_started = true;
 
     // // Send event
-    events::send(new Event(events::device_connected, events::private_channel, this->device));
+    // events::send(new Event(events::device_connected, events::private_channel, this->device));
     return true;
   }
 

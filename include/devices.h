@@ -20,11 +20,10 @@ namespace domoio {
 
   class PortState {
   public:
-    PortState(DeviceState* _device, int id, std::string name, bool digital, bool output)
-      : device(_device), _id(id), _name(name), _digital(digital), _output(output) {
+    PortState(DeviceState* _device, int id, bool digital, bool output)
+      : device(_device), _id(id), _digital(digital), _output(output) {
       this->_value = -1;
     }
-    std::string name() { return this->_name; };
     bool digital() { return this->_digital; }
     bool analogic() { return !this->_digital; }
     bool output() { return this->_output; }
@@ -37,7 +36,6 @@ namespace domoio {
 
   protected:
     int _id;
-    std::string _name;
     bool _digital;
     bool _output;
     int _value;
@@ -50,19 +48,14 @@ namespace domoio {
   private:
 
     DeviceState(Device *);
-    ~DeviceState(void) {
-      for (std::map<int, PortState*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
-        PortState *state = it->second;
-        delete(state);
-      }
-    }
+    ~DeviceState(void);
 
     static std::map<int, DeviceState*> active_devices;
 
 
     const bool is_virtual;
     std::map<int, PortState*> ports;
-
+    boost::mutex viritual_devices_mutex;
 
   public:
     static DeviceState *find(int);

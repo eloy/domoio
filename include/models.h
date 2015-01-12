@@ -28,12 +28,6 @@ namespace domoio {
 
 
 
-
-
-
-
-
-
   class Port : public vault::Model<Port> {
   public:
   Port() : vault::Model<Port>() {
@@ -48,6 +42,7 @@ namespace domoio {
 
 
   class Specifications : public vault::Model<Specifications> {
+    friend class DeviceState;
   public:
   Specifications() : vault::Model<Specifications>() {
       this->add_field("serial", vault::string, &this->serial);
@@ -56,35 +51,30 @@ namespace domoio {
       this->add_field("description", vault::string, &this->description);
     }
 
-    vault::ModelsCollection<Port> ports;
+
     std::string serial;
     std::string manufacturer_raw;
     std::string model_raw;
     std::string description;
 
   protected:
-    virtual void after_from_json_object(json::Object doc) {
-      LOG(error) << "FROM JSON: spe";
-      json::Array ports = doc["ports"];
-      this->ports.from_json_array(ports);
-    }
-
-    virtual void after_to_json_object(json::Object *doc) {
-      (*doc)["ports"] = this->ports.to_json_array();
-    }
+    vault::ModelsCollection<Port> ports;
+    virtual void after_from_json_object(json::Object *doc);
+    virtual void after_to_json_object(json::Object *doc);
   };
 
 
 
 
   class Device : public vault::Model<Device> {
+    friend class DeviceState;
   public:
     static const char* table_name(void) { return "devices"; }
   Device() : vault::Model<Device>() {
       this->add_field("label", vault::string, &this->label);
       this->add_field("password", vault::string, &this->password, (vault::DB | vault::FROM_JSON));
-      this->add_field("specifications", vault::string, &this->specifications_raw, (vault::DB | vault::FROM_JSON));
-      this->add_field("config", vault::string, &this->config_raw, (vault::DB | vault::FROM_JSON));
+      this->add_field("specifications", vault::text, &this->specifications_raw, vault::DB);
+      this->add_field("config", vault::text, &this->config_raw, (vault::DB | vault::FROM_JSON));
       this->add_field("type", vault::string, &this->type);
     }
     const Specifications *get_specifications() { return &this->specifications; }
@@ -96,21 +86,11 @@ namespace domoio {
     bool is_virtual() { return this->type == "VirtualDevice"; }
 
   protected:
-    virtual bool after_load(PGresult *res, int row) {
-      this->specifications.from_json(this->specifications_raw);
-      return true;
-    }
+    virtual bool after_load(PGresult* , int);
 
-    virtual void after_from_json_object(json::Object doc) {
-      LOG(error) << "FROM JSON: " << this->specifications_raw;
-      json::Object specs = doc["specifications"];
-      this->specifications.from_json_object(specs);
-      this->specifications_raw.assign(this->specifications.to_json());
-    }
+    virtual void after_from_json_object(json::Object*);
 
-    virtual void after_to_json_object(json::Object *doc) {
-      (*doc)["specifications"] = this->specifications.to_json_object();
-    }
+    virtual void after_to_json_object(json::Object*);
 
     std::string config_raw;
     std::string type;
