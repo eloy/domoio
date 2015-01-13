@@ -12,6 +12,13 @@ namespace domoio {
     this->id = port_id.Value();
   }
 
+  void Port::after_to_json_object(json::Object *doc) {
+    // Force the id when it is 0
+    if (this->id == 0) {
+      (*doc)["id"] = json::Number(0);
+    }
+  }
+
 
   void Specifications::after_from_json_object(json::Object *doc) {
     json::Array ports = (*doc)["ports"];

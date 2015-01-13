@@ -28,6 +28,8 @@ namespace domoio {
 
 
 
+  class Device;
+
   class Port : public vault::Model<Port> {
   public:
   Port() : vault::Model<Port>() {
@@ -38,8 +40,12 @@ namespace domoio {
     std::string name;
     bool digital;
     bool output;
+    // Link to the device.
+    // we setup this in device_template.cc, method get_ports
+    Device *device;
   private:
     virtual void after_from_json_object(json::Object *doc);
+    virtual void after_to_json_object(json::Object *doc);
   };
 
 
@@ -80,7 +86,9 @@ namespace domoio {
       this->add_field("config", vault::text, &this->config_raw, (vault::DB | vault::FROM_JSON));
       this->add_field("type", vault::string, &this->type);
     }
-    const Specifications *get_specifications() { return &this->specifications; }
+
+    Specifications *get_specifications() { return &this->specifications; }
+    vault::ModelsCollection<Port> *get_ports() { return &this->specifications.ports; }
 
     std::string label;
     std::string password;

@@ -243,7 +243,6 @@ namespace vault {
       return true;
     }
 
-    virtual Model<T>* clone() const { return 0; }
 
     bool load_from_res(PGresult *res, int row=0) {
       for(std::vector<Field*>::iterator it = this->fields.begin(); it != this->fields.end(); ++it) {
@@ -301,7 +300,37 @@ namespace vault {
         return false;
       }
 
+
       collection->fill_from_res(res);
+      PQclear(res);
+      return true;
+    }
+
+
+    static bool all(std::vector<T*> *collection) {
+      const char *values[] = {};
+      int paramLengths[] = {};
+      int paramFormats[] = {};
+
+      // Build tue query
+      std::string sql;
+      sql.append("select * from ").append(T::table_name());
+
+      PGresult *res = PQexecParams(domoio::db::connection(), sql.c_str(), 0, NULL, values, paramLengths, paramFormats, 0);
+
+      if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        LOG(error) << "SQL ERROR: " << PQerrorMessage(domoio::db::connection());
+        PQclear(res);
+        return false;
+      }
+
+      int length = PQntuples(res);
+      for(int i=0; i < length; i++) {
+        T *model = new T();
+        model->load_from_res(res, i);
+        collection->push_back(model);
+      }
+
       PQclear(res);
       return true;
     }

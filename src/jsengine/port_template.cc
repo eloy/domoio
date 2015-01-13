@@ -51,9 +51,8 @@ namespace domoio {
     void set_port_value(Local<String> property, Local<Value> value, const PropertyCallbackInfo<void>& info) {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-      void* ptr = wrap->Value();
+
       int value_int;
-      Port *port = static_cast<Port*>(ptr);
       // TODO: Check port is input
       if (value->IsBoolean()) {
         // TODO: Check if port is digital
@@ -67,9 +66,24 @@ namespace domoio {
         // TODO: Check if port is analogic
         value_int = value->Int32Value();
       }
+      void* ptr = wrap->Value();
+      Port *port = static_cast<Port*>(ptr);
 
-      // TODO: Implement
-      // port->set_value(value_int);
+      // Get the state
+      DeviceState *device_state = DeviceState::find(port->device->get_id());
+      if (device_state == NULL) {
+        // TODO: Error
+        return;
+      }
+
+      PortState *port_state = device_state->port(port->get_id());
+
+      if (port_state == NULL) {
+        // TODO: Error
+        return;
+      }
+
+      port_state->set_value(value_int);
     }
 
     Local<ObjectTemplate> create_port_template(v8::Isolate *isolate) {
