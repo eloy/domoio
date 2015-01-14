@@ -1,3 +1,4 @@
+#include "models.h"
 #include "devices.h"
 #include "httpd.h"
 
@@ -37,20 +38,52 @@ namespace domoio {
 
       bool ports(Request *request) {
         int device_id = request->param_int("device_id");
-        int port_id = request->param_int("id");
+        int id = request->param_int("id");
+
+        Device device;
+        if (device.load_from_db(device_id) == false) {
+          return false;
+        }
+
+        // SHOW
+        if (request->is_get()) {
+          Port *port = device.get_port(id);
+          if (port == NULL) {
+            return false;
+          }
+
+          request->response_data(port->to_json());
+          return true;
+        }
+
+
+        // Create
+        if (request->is_post()) {
+          Port *port = new Port();
+          port->from_json(request->post_data_raw.str());
+          device.add_port(port);
+          device.save();
+          request->response_data(port->to_json());
+          LOG(trace) << "Port created";
+          return true;
+        }
 
         // Update
         if (request->is_put()) {
-          if (request->post_data_received) {
-            LOG(error) << "Updating port: " << port_id << " with: " << request->post_data_raw;
+          Port *port = device.get_port(id);
+          if (port == NULL) {
+            return false;
           }
 
-          request->response_data("OK");
+          port->from_json(request->post_data_raw.str());
+          device.save();
+          request->response_data(port->to_json());
+          LOG(trace) << "Port created";
           return true;
         }
+
         return false;
       }
-
 
 
     }
