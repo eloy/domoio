@@ -1,4 +1,5 @@
-#include "domoio.h"
+#include "models.h"
+#include "devices.h"
 #include "jsengine.h"
 
 namespace domoio {
@@ -13,7 +14,7 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      int value = static_cast<Device*>(ptr)->id;
+      int value = static_cast<Device*>(ptr)->get_id();
       info.GetReturnValue().Set(value);
     }
 
@@ -29,10 +30,11 @@ namespace domoio {
 
 
     void set_label(Local<String> property, Local<Value> value, const PropertyCallbackInfo<void>& info) {
-      // Local<Object> self = info.Holder();
-      // Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-      // void* ptr = wrap->Value();
-      // static_cast<Device*>(ptr)->label.assign(object_to_string(value));
+      Local<Object> self = info.Holder();
+      Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+      void* ptr = wrap->Value();
+      Device *device = static_cast<Device*>(ptr);
+      device->label.assign(object_to_string(value));
     }
 
     // Ports
@@ -40,12 +42,15 @@ namespace domoio {
       Local<Object> self = info.Holder();
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
-      std::map<int, Port*> *ports_map = static_cast<Device*>(ptr)->get_ports();
+      Device *device = static_cast<Device*>(ptr);
+
 
 
       v8::Isolate* isolate = info.GetIsolate();
 
       EscapableHandleScope handle_scope(isolate);
+
+      std::map<int, Port*> *ports_map = device->get_ports();
       Local<Array> array = Array::New(isolate, ports_map->size());
 
       // Return an empty result if there was an error creating the array.
@@ -60,6 +65,10 @@ namespace domoio {
       int index = 0;
       for (std::map<int, Port*>::iterator it = ports_map->begin(); it != ports_map->end(); ++it) {
         Port *port = it->second;
+
+        // Set the device as we'll need it later to set values
+        port->device = device;
+
         Local<Object> obj = port_templ->NewInstance();
         obj->SetInternalField(0, External::New(isolate, port));
         array->Set(index++, obj);

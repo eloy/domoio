@@ -1,5 +1,5 @@
 #include "domoio.h"
-
+#include "events.h"
 
 namespace domoio {
   int events_counter;

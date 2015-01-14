@@ -1,8 +1,11 @@
-#ifndef CRYPT_H
-#define CRYPT_H
+#include <cstdlib>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+
+#ifndef CRYPT_H
+
+#define CRYPT_H
 #define AES_BLOCK_SIZE 128
 #define AES_IV_LENGTH 16
 

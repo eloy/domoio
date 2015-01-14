@@ -1,5 +1,7 @@
-#include "domoio.h"
+#include "log.h"
+#include "events.h"
 #include "httpd.h"
+#include <boost/thread.hpp>
 
 #define BUFFER_SIZE 3072
 
@@ -55,7 +57,7 @@ namespace domoio {
         EventPtr event_ptr = ctx->queue.front();
         ctx->queue.pop_front();
         Event *event = event_ptr.get();
-        std::string data = event->to_json();
+        std::string data = event->json;
         return snprintf(buf, buffer_size, "data: %s\n\n", data.c_str());
 
         return 0;

@@ -1,4 +1,4 @@
-#include "domoio.h"
+#include "domoio_server.h"
 
 namespace domoio {
   Server::Server(boost::asio::io_service& _io_service, short _port) :

@@ -1,4 +1,7 @@
 #include "domoio.h"
+#include "database.h"
+#include "config.h"
+#include "domoio_server.h"
 #include "jsengine.h"
 #include "httpd.h"
 #include <sys/resource.h>
@@ -19,7 +22,7 @@ void on_exit() {
 
 
 void my_handler(int s){
-  LOG(fatal) << "Caught signal:" << s;
+  LOG(trace) << "Caught signal:" << s;
   on_exit();
   exit(1);
 }
@@ -41,6 +44,8 @@ int main(int argc, char* argv[]) {
   domoio::prepare_config(argc, argv);
 
   domoio::init_domoio();
+
+  domoio::DeviceState::load_virtual_devices();
 
   // Exit callback
   std::atexit(on_exit);

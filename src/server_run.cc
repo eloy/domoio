@@ -1,4 +1,6 @@
-#include "domoio.h"
+#include "domoio_server.h"
+#include "config.h"
+#include <boost/thread.hpp>
 
 namespace domoio {
 

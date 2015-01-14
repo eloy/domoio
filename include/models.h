@@ -1,126 +1,121 @@
+#include "data_mapper.h"
 #ifndef MODELS_H
 #define MODELS_H
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include "jsengine.h"
-#include "json.h"
-
-#define keypair(type) std::pair<std::string, type>
 
 namespace domoio {
+  class User : public vault::Model<User> {
+  public:
+    static const char* table_name(void) { return "users"; }
+    User() : vault::Model<User>() {
+      this->add_field("name", vault::string, &this->name);
+      this->add_field("email", vault::string, &this->email);
+      this->add_field("encrypted_password", vault::string, &this->encrypted_password, vault::DB);
+    }
+
+
+    std::string get_name() { return this->name;}
+    void set_name(std::string new_name) { this->name.assign(new_name); }
+    std::string get_email() { return this->email;}
+    void set_email(std::string new_email) { this->email.assign(new_email); }
+
+    virtual User* clone() const { return new User(*this); }
+
+  protected:
+    std::string name;
+    std::string email;
+    std::string encrypted_password;
+  };
+
+
 
   class Device;
 
-  class Port {
+  class Port : public vault::Model<Port> {
   public:
-    Port(Device* _device, int id, std::string name, bool digital, bool output)
-      : device(_device), _id(id), _name(name), _digital(digital), _output(output) {
-      this->_value = -1;
+  Port() : vault::Model<Port>() {
+      this->add_field("id", vault::integer, &this->id, vault::FROM_JSON);
+      this->add_field("name", vault::string, &this->name);
+      this->add_field("digital", vault::boolean, &this->digital);
+      this->add_field("output", vault::boolean, &this->output);
     }
-    std::string name() { return this->_name; };
-    bool digital() { return this->_digital; }
-    bool analogic() { return !this->_digital; }
-    bool output() { return this->_output; }
-    bool input() { return !this->_output; }
-    int id() { return this->_id; }
-    int value() { return this->_value; }
-    void set_value(int, bool silent=false);
-    void set_value(bool);
-    void to_json_object(json::Object&);
-
-  protected:
-    int _id;
-    std::string _name;
-    bool _digital;
-    bool _output;
-    int _value;
+    std::string name;
+    bool digital;
+    bool output;
+    void set_id(int new_id) { this->id = new_id;}
+    // Link to the device.
+    // we setup this in device_template.cc, method get_ports
     Device *device;
-
-    bool send_to_device(const char*);
+  private:
+    virtual void after_from_json_object(json::Object *doc);
+    virtual void after_to_json_object(json::Object *doc);
   };
 
 
-  enum DeviceType {
-    network_device,
-    virtual_device
-  };
-
-  class Device {
+  class Specifications : public vault::Model<Specifications> {
+    friend class DeviceState;
+    friend class Device;
   public:
-    ~Device(void) {
-      for (std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
-        delete(it->second);
-      }
+  Specifications() : vault::Model<Specifications>() {
+      this->add_field("serial", vault::string, &this->serial);
+      this->add_field("manufacturer", vault::string, &this->manufacturer_raw);
+      this->add_field("model", vault::string, &this->model_raw);
+      this->add_field("description", vault::string, &this->description);
     }
 
-    bool set_port_state(int, int);
+    ~Specifications();
 
-    bool connect();
-    bool is_connected() { return this->connected; }
-
-
-    void to_json_object(json::Object&);
-
-    const int id;
-    const std::string label;
-    int ports_count() { return this->ports.size(); }
-    Port *port(int id) { return this->ports[id]; }
-    std::map<int, Port*> *get_ports() { return &this->ports; }
-
-    // Type
-    bool is_network_device() { return this->device_type == network_device; }
-    bool is_virtual_device() { return this->device_type == virtual_device; }
-
-    // Serialized fields
-    std::string description;
     std::string serial;
-    std::string manufacturer_id;
-    std::string model;
-    boost::signals2::signal<void (std::string)> network_signals;
+    std::string manufacturer_raw;
+    std::string model_raw;
+    std::string description;
 
   protected:
-    Device(DeviceType type, int id_, std::string label_, std::string  specs)
-      : id(id_), label(label_), device_type(type) {
-
-      this->parse_specifications(specs);
-    }
-    const DeviceType device_type;
-    bool connected;
-    void parse_specifications(std::string);
     std::map<int, Port*> ports;
-
+    virtual void after_from_json_object(json::Object *doc);
+    virtual void after_to_json_object(json::Object *doc);
   };
 
-  class NetworkDevice : public Device {
-    friend class DeviceConnection;
+
+
+
+  class Device : public vault::Model<Device> {
+    friend class DeviceState;
   public:
-    NetworkDevice(int id, const char *label, const char *specs, const char *_password)
-      : Device(network_device, id, label, specs), password(_password) {
-      this->connected = false;
+    static const char* table_name(void) { return "devices"; }
+  Device() : vault::Model<Device>() {
+      this->add_field("label", vault::string, &this->label);
+      this->add_field("password", vault::string, &this->password, (vault::DB | vault::FROM_JSON));
+      this->add_field("specifications", vault::text, &this->specifications_raw, vault::DB);
+      this->add_field("config", vault::text, &this->config_raw, (vault::DB | vault::FROM_JSON));
+      this->add_field("type", vault::string, &this->type);
     }
-    static NetworkDevice* find(int);
-  private:
+
+    Specifications *get_specifications() { return &this->specifications; }
+    std::map<int, Port*> *get_ports() { return &this->specifications.ports; }
+
+    Port * get_port(int);
+    void add_port(Port *);
+
+    std::string label;
     std::string password;
+    std::string specifications_raw;
+
+    bool is_virtual() { return this->type == "VirtualDevice"; }
+
+  protected:
+    virtual bool after_load(PGresult* , int);
+    virtual bool before_save();
+    virtual void after_from_json_object(json::Object*);
+
+    virtual void after_to_json_object(json::Object*);
+
+    std::string config_raw;
+    std::string type;
+    Specifications specifications;
   };
 
 
-  class VirtualDevice : public Device {
-  public:
-    VirtualDevice(int id, const char *label, const char *specs)
-      : Device(virtual_device, id, label, specs) {
-      this->connected = true;
-    }
-  };
 
-
-  // Devices List
-  void load_devices(void);
-  void free_devices(void);
-  Device *device_find(int);
-  std::map<int, Device*>::iterator devices_iterator(void);
-  const std::map<int, Device*> *all_devices();
-  bool device_set_port_state(std::string, int);
-  std::string devices_to_json();
 }
 
 #endif //MODELS_H

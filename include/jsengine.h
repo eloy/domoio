@@ -1,7 +1,8 @@
+#include <cstdlib>
+
 #ifndef JSENGINE_H
 #define JSENGINE_H
 #include <v8.h>
-#include "helpers.h"
 
 namespace domoio {
 

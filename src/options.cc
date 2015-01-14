@@ -1,4 +1,5 @@
-#include "domoio.h"
+#include "config.h"
+#include "log.h"
 #include <iostream>
 #include <fstream>
 #include <iterator>

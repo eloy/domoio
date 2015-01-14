@@ -1,7 +1,12 @@
+#include <gtest/gtest.h>
+#include <boost/asio.hpp>
+#include "domoio_server.h"
+#include "devices.h"
+#include "events.h"
+#include "config.h"
+
 #ifndef DOMOIO_TEST_H
 #define DOMOIO_TEST_H
-#include <gtest/gtest.h>
-#include "domoio.h"
 
 #define DOMOIO_ENV_TEST
 
@@ -32,6 +37,8 @@ namespace domoio {
     io_service(_io_service),  socket(_io_service), id(_id), password(_password) {
       this->session_started = false;
     }
+
+    ~TestDevice();
 
     bool connect(void);
     bool login(void);
@@ -87,9 +94,9 @@ namespace domoio {
 
 
   // FACTORIES
-  extern std::map<int, Device*> devices;
-  NetworkDevice *factory_network_device(int, const char*, const char*);
-
+  // extern std::map<int, Device*> devices;
+  Device *factory_device(const char*, const char*, bool virt=false);
+  void load_device(Device *device, const char*, const char*, bool virt=false);
 }
 
 #endif //DOMOIO_TEST_H

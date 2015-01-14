@@ -1,4 +1,6 @@
-#include "domoio.h"
+#include <string>
+#include "crypt.h"
+
 #define ENTROPY_SOURCE_FILE "/dev/random"
 #define ENTROPY_SIZE 2048
 namespace domoio {

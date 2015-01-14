@@ -1,6 +1,7 @@
+#include <boost/program_options.hpp>
 #ifndef CONFIG_H
 #define CONFIG_H
-#include <boost/program_options.hpp>
+
 
 
 #ifndef DOMOIO_CONFIG_FILE

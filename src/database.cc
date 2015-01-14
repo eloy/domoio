@@ -1,4 +1,5 @@
-#include "domoio.h"
+#include "database.h"
+#include "config.h"
 
 namespace domoio {
   namespace db {

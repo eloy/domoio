@@ -1,5 +1,6 @@
-#include "domoio_test.h"
-#include "data_mapper.h"
+#include <gtest/gtest.h>
+#include "models.h"
+
 
 TEST(UserModel, save) {
   domoio::User user;
@@ -47,4 +48,17 @@ TEST(UserModel, mem) {
   domoio::User *last = collection.at(1);
   ASSERT_EQ("foo", first->get_name());
   ASSERT_EQ("bar", last->get_name());
+}
+
+TEST(UserModel, clone) {
+  // domoio::User *foo = new domoio::User();
+  // foo->set_name("foo");
+  // foo->set_email("foo@domoio.com");
+
+  // domoio::User *bar;
+  // bar = foo->clone();
+  // delete(foo);
+  // ASSERT_EQ("foo", bar->get_name());
+  // ASSERT_EQ("foo@domoio.com", bar->get_email());
+  // delete(bar);
 }

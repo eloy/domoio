@@ -1,5 +1,6 @@
-#include "domoio.h"
+#include "events.h"
 #include "json.h"
+#include <boost/thread.hpp>
 
 namespace domoio {
   namespace events {
@@ -63,6 +64,12 @@ namespace domoio {
       return true;
     }
 
+  }
+
+
+  void Event::initialize() {
+    this->date = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+    this->json = this->to_json();
   }
 
 
