@@ -126,34 +126,8 @@ target_link_libraries (domoio_base ${DEP_LIBS})
 add_executable(domoio ./src/main)
 target_link_libraries (domoio domoio_base ${DEP_LIBS})
 
-
 # Test
 #-----------------------------------------------------------------------
-
-# Test Sources
-# Features
-set(TEST_SRC ${TEST_SRC} ./test/domoio_test
-  ./test/features/server_test
-  ./test/features/events_test
-  ./test/features/create_session_test
-  ./test/features/signals_test
-  ./test/features/cmd_set_test
-  ./test/features/cmd_all_ports_state_test
-
-  # HTTP
-  ./test/features/http/ports/update_test
-)
-
-# Unit
-set(TEST_SRC ${TEST_SRC}
-  ./test/unit/devices_test
-  ./test/unit/block_cypher_test
-  ./test/unit/httpd/server_test
-  ./test/unit/httpd/request_test
-  ./test/unit/httpd/httpd_action_test
-  ./test/unit/models/model_user_test
-  ./test/unit/models/model_device_test
-)
 
 # Configure Google Test Lib
 IF(GTEST_PATH)
@@ -171,9 +145,36 @@ set(TEST_SRC ${TEST_SRC}
   ./test/support/helpers
 )
 
+
+# Test Sources
+# Features
+set(TEST_SRC ${TEST_SRC} ./test/domoio_test
+  ./test/features/server_test
+  ./test/features/events_test
+  ./test/features/create_session_test
+  ./test/features/signals_test
+  ./test/features/cmd_set_test
+  ./test/features/cmd_all_ports_state_test
+
+  # # HTTP
+  ./test/features/http/ports/update_test
+)
+
+# Unit
+set(TEST_SRC ${TEST_SRC}
+  ./test/unit/devices_test
+  ./test/unit/block_cypher_test
+  ./test/unit/httpd/server_test
+  ./test/unit/httpd/request_test
+  ./test/unit/httpd/httpd_action_test
+  ./test/unit/models/model_user_test
+  ./test/unit/models/model_device_test
+)
+
+
+
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})
 target_link_libraries (test domoio_base ${DEP_LIBS} ${TEST_DEP_LIBS})
-
 
 
 # INSTALL

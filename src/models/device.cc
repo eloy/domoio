@@ -19,26 +19,49 @@ namespace domoio {
     }
   }
 
+  Specifications::~Specifications() {
+    for(std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
+      Port *port = it->second;
+      delete(port);
+    }
+    this->ports.clear();
+  }
+
 
   void Specifications::after_from_json_object(json::Object *doc) {
     json::Array ports = (*doc)["ports"];
-    this->ports.from_json_array(ports);
+    json::Array::const_iterator it(ports.Begin()), itEnd(ports.End());
+    for (; it != itEnd; ++it) {
+      const json::Object& doc = *it;
+      Port *port = new Port();
+      port->from_json_object(doc);
+      this->ports[port->get_id()] = port;
+    }
   }
 
   void Specifications::after_to_json_object(json::Object *doc) {
-    (*doc)["ports"] = this->ports.to_json_array();
-  }
+    json::Array ports;
 
+    for(std::map<int, Port*>::iterator it = this->ports.begin(); it != this->ports.end(); ++it) {
+      Port *port = it->second;
+      ports.Insert(port->to_json_object());
+    }
+    (*doc)["ports"] = ports;
+  }
 
   bool Device::after_load(PGresult *res, int row) {
     this->specifications.from_json(this->specifications_raw);
     return true;
   }
 
+  bool Device::before_save() {
+    this->specifications_raw.assign(this->specifications.to_json());
+    return true;
+  }
+
   void Device::after_from_json_object(json::Object *doc) {
     json::Object specs = (*doc)["specifications"];
     this->specifications.from_json_object(specs);
-    this->specifications_raw.assign(this->specifications.to_json());
   }
 
   void Device::after_to_json_object(json::Object *doc) {
@@ -51,8 +74,8 @@ namespace domoio {
     // Build ports with info from specifications, config and state
     json::Array ports;
 
-    for(std::vector<Port*>::iterator it = this->specifications.ports.begin(); it != this->specifications.ports.end(); ++it) {
-      Port *port = *it;
+    for(std::map<int, Port*>::iterator it = this->specifications.ports.begin(); it != this->specifications.ports.end(); ++it) {
+      Port *port = it->second;
       json::Object obj = port->to_json_object();
 
       if (connected) {
@@ -70,12 +93,30 @@ namespace domoio {
 
   }
 
+
+  Port * Device::get_port(int port_id) {
+    for(std::map<int, Port*>::iterator it = this->specifications.ports.begin(); it != this->specifications.ports.end(); ++it) {
+      Port *port = it->second;
+      if (port->get_id() == port_id) {
+        return port;
+      }
+    }
+    return NULL;
+  }
+
+  void Device::add_port(Port *port) {
+    // port->set_id(this->specifications.ports.size());
+    this->specifications.ports[port->get_id()] = port;
+  }
+
+
+
   std::map<int, DeviceState*> DeviceState::active_devices;
 
   DeviceState::DeviceState(Device *device) : id(device->get_id()), is_virtual(device->is_virtual()) {
     // Build ports
-    for(std::vector<Port*>::iterator it = device->specifications.ports.begin(); it != device->specifications.ports.end(); ++it) {
-      Port *port = *it;
+    for(std::map<int, Port*>::iterator it = device->specifications.ports.begin(); it != device->specifications.ports.end(); ++it) {
+      Port *port = it->second;
       PortState *port_state = new PortState(this, port->get_id(), port->digital, port->output);
       this->ports[port->get_id()] = port_state;
     }

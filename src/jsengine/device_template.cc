@@ -43,12 +43,14 @@ namespace domoio {
       Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
       void* ptr = wrap->Value();
       Device *device = static_cast<Device*>(ptr);
-      vault::ModelsCollection<Port> *ports_map = device->get_ports();
+
 
 
       v8::Isolate* isolate = info.GetIsolate();
 
       EscapableHandleScope handle_scope(isolate);
+
+      std::map<int, Port*> *ports_map = device->get_ports();
       Local<Array> array = Array::New(isolate, ports_map->size());
 
       // Return an empty result if there was an error creating the array.
@@ -61,8 +63,8 @@ namespace domoio {
       Local<ObjectTemplate> port_templ = create_port_template(isolate);
 
       int index = 0;
-      for (std::vector<Port*>::iterator it = ports_map->begin(); it != ports_map->end(); ++it) {
-        Port *port = *it;
+      for (std::map<int, Port*>::iterator it = ports_map->begin(); it != ports_map->end(); ++it) {
+        Port *port = it->second;
 
         // Set the device as we'll need it later to set values
         port->device = device;

@@ -33,6 +33,7 @@ namespace domoio {
   class Port : public vault::Model<Port> {
   public:
   Port() : vault::Model<Port>() {
+      this->add_field("id", vault::integer, &this->id, vault::FROM_JSON);
       this->add_field("name", vault::string, &this->name);
       this->add_field("digital", vault::boolean, &this->digital);
       this->add_field("output", vault::boolean, &this->output);
@@ -40,6 +41,7 @@ namespace domoio {
     std::string name;
     bool digital;
     bool output;
+    void set_id(int new_id) { this->id = new_id;}
     // Link to the device.
     // we setup this in device_template.cc, method get_ports
     Device *device;
@@ -60,6 +62,7 @@ namespace domoio {
       this->add_field("description", vault::string, &this->description);
     }
 
+    ~Specifications();
 
     std::string serial;
     std::string manufacturer_raw;
@@ -67,7 +70,7 @@ namespace domoio {
     std::string description;
 
   protected:
-    vault::ModelsCollection<Port> ports;
+    std::map<int, Port*> ports;
     virtual void after_from_json_object(json::Object *doc);
     virtual void after_to_json_object(json::Object *doc);
   };
@@ -88,7 +91,10 @@ namespace domoio {
     }
 
     Specifications *get_specifications() { return &this->specifications; }
-    vault::ModelsCollection<Port> *get_ports() { return &this->specifications.ports; }
+    std::map<int, Port*> *get_ports() { return &this->specifications.ports; }
+
+    Port * get_port(int);
+    void add_port(Port *);
 
     std::string label;
     std::string password;
@@ -98,7 +104,7 @@ namespace domoio {
 
   protected:
     virtual bool after_load(PGresult* , int);
-
+    virtual bool before_save();
     virtual void after_from_json_object(json::Object*);
 
     virtual void after_to_json_object(json::Object*);
