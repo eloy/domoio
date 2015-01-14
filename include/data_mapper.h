@@ -36,7 +36,6 @@ namespace vault {
     friend class Model<T>;
   public:
     ModelsCollection() {
-      this->length = 0;
     }
 
     ~ModelsCollection() {
@@ -50,7 +49,7 @@ namespace vault {
       this->models_mutex.unlock();
     }
 
-    int size() {return this->length;}
+    int size() {return this->models.size();}
 
     T *at(int index) {
       return this->models.at(index);
@@ -60,7 +59,7 @@ namespace vault {
 
     json::Array to_json_array() {
       json::Array array;
-      for(int i=0; i < this->length; i++) {
+      for(int i=0; i < this->models.size(); i++) {
         T *model = this->models.at(i);
         array.Insert(model->to_json_object());
       }
@@ -75,8 +74,6 @@ namespace vault {
         model->from_json_object(doc);
         this->models.push_back(model);
       }
-
-      this->length = this->models.size();
     }
 
 
@@ -105,14 +102,13 @@ namespace vault {
     }
 
   private:
-    int length;
     std::vector<T*> models;
     boost::mutex models_mutex;
 
     bool fill_from_res(PGresult *res) {
       this->models_mutex.lock();
-      this->length = PQntuples(res);
-      for(int i=0; i < this->length; i++) {
+      int length = PQntuples(res);
+      for(int i=0; i < length; i++) {
         T *model = new T();
         model->load_from_res(res, i);
         this->models.push_back(model);
