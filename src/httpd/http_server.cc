@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define POST_BUFFER_SIZE 2048
+#define POST_BUFFER_SIZE 4096
 
 namespace domoio {
   namespace httpd {
@@ -20,6 +20,7 @@ namespace domoio {
 
     namespace actions {
       DEF_HTTPD_ACTION(events);
+      DEF_HTTPD_ACTION(static_content);
       DEF_HTTPD_ACTION(devices);
       DEF_HTTPD_ACTION(ports);
       DEF_HTTPD_ACTION(set_port);
@@ -27,13 +28,20 @@ namespace domoio {
     }
 
     void register_actions() {
+      // Event Source server
       register_action("/api/events", &actions::events);
 
+      // API
       register_action("/api/devices/?:id?", &actions::devices);
       register_action("/api/devices/:device_id/ports/?:id?", &actions::ports);
       register_action("/api/devices/:device_id/ports/:id/set", &actions::set_port);
 
       register_action("/api/users/?:id?", &actions::users);
+
+      // Static content
+      register_action("/", &actions::static_content);
+      register_action("/assets/.+", &actions::static_content);
+
     }
 
 

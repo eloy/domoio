@@ -107,9 +107,10 @@ set(SRC ${SRC}
   ./src/httpd/http_server
   ./src/httpd/request
   ./src/httpd/httpd_action
+  ./src/httpd/actions/http_static_content
   ./src/httpd/actions/http_events
   ./src/httpd/actions/http_devices
-  ./src/httpd/actions/ports
+  ./src/httpd/actions/http_ports
   ./src/httpd/actions/http_users
   )
 
