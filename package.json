@@ -1,0 +1,29 @@
+{
+  "name": "domoio",
+  "description": "Compile coffee and sass",
+  "version": "0.0.1",
+  "maintainers": [
+    {
+      "name": "Eloy Gomez",
+      "email": "eloy@indeos.es",
+      "web": "https://github.com/harlock"
+    }
+  ],
+  "dependencies": {
+    "coffee-script": "*"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-coffee": "~0.12.0",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-less": "~1.0.0"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/harlock/domoio.git"
+    }
+  ],
+  "homepage": "https://github.com/harlock/domoio"
+}
