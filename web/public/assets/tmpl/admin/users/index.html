@@ -1,0 +1,18 @@
+<h1 class="page-header">Users</h1>
+
+<a href="/admin/users/new" class="btn btn-success pull-right">New User</a>
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody repeat="user in users">
+    <tr>
+      <td><a href="/admin/users/{{user.id}}/edit">{{user.name}}</a></td>
+      <td>{{user.email}}</td>
+    </tr>
+  </tbody>
+</table>

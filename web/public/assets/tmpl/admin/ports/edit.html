@@ -1,0 +1,30 @@
+<h1 class="page-header">Edit Port</h1>
+<form submit="submit()">
+
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input class="form-control" id="name" model="port.name">
+  </div>
+
+
+  <div class="form-group">
+    <label class="radio-inline">
+      <input type="radio" model="digital" value="true"> Digital
+    </label>
+    <label class="radio-inline">
+      <input type="radio" model="digital" value="false"> Analogic
+    </label>
+  </div>
+
+  <div class="form-group">
+    <label class="radio-inline">
+      <input type="radio" model="output" value="true"> Output
+    </label>
+    <label class="radio-inline">
+      <input type="radio" model="output" value="false"> Input
+    </label>
+  </div>
+
+
+  <input type="submit" class="btn btn-primary">
+</form>
