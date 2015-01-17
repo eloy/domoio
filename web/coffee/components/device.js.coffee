@@ -7,7 +7,7 @@ tmpl = '''
   <div class="ports btn-group" repeat="port in device.ports">
     <button class="btn btn-sm" cclass="'btn-success': port.value, 'btn-default': !port.value" click="togglePortState(port)">
       {{port.name}}
-      <span if="device.connected">{{port.value.toString()}}</span>
+      <span if="device.connected">{{port.value ? 'on' : 'off'}}</span>
     </button>
   </div>
 </div>

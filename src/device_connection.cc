@@ -196,7 +196,7 @@ namespace domoio {
     this->session_started = true;
 
     // // Send event
-    // events::send(new Event(events::device_connected, events::private_channel, this->device));
+    events::send(new Event(events::device_connected, events::private_channel, this->device));
     return true;
   }
 

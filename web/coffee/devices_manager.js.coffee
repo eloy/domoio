@@ -17,6 +17,16 @@ class DevicesManager
           p.value = data.value
           app.refresh()
 
+      else if data.type == "device_connected"
+        console.log "Connected"
+        d = @device(data.device_id)
+        d.connected = true
+
+      else if data.type == "device_disconnected"
+        console.log "Disconnected"
+        d = @device(data.device_id)
+        d.connected = false
+
 
   device: (id) ->
     return d for d in @devices when d.id == id
