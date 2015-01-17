@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include "domoio.h"
 #include "database.h"
 #include "cajun/json/reader.h"

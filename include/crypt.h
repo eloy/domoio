@@ -1,4 +1,6 @@
 #include <cstdlib>
+#include <stdint.h>
+#include <string.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
