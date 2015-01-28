@@ -67,6 +67,7 @@ set(SRC ${SRC}
   ./src/server_run
   ./src/connection
   ./src/device_connection
+  ./src/ssdp.cc
   ./src/events
   ./src/database
   ./src/helpers

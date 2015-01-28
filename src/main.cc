@@ -16,14 +16,8 @@ static bool EnableCoreDumps(void) {
 
 
 
-void on_exit() {
+void exit_callback(int s) {
   domoio::exit_domoio();
-}
-
-
-void my_handler(int s){
-  LOG(trace) << "Caught signal:" << s;
-  on_exit();
   exit(1);
 }
 
@@ -32,7 +26,7 @@ int main(int argc, char* argv[]) {
   // EnableCoreDumps();
   // Catch signals
   struct sigaction sigIntHandler;
-  sigIntHandler.sa_handler = my_handler;
+  sigIntHandler.sa_handler = exit_callback;
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
 
@@ -43,12 +37,12 @@ int main(int argc, char* argv[]) {
   domoio::setup_config_options();
   domoio::prepare_config(argc, argv);
 
+  //  domoio::init_ssdp();
+
   domoio::init_domoio();
 
   domoio::DeviceState::load_virtual_devices();
 
-  // Exit callback
-  std::atexit(on_exit);
   domoio::events::start();
 
   // JS service

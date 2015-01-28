@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+	<specVersion>
+		<major>1</major>
+		<minor>0</minor>
+	</specVersion>
+	<device>
+		<deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>
+		<friendlyName>Domoio</friendlyName>
+		<manufacturer>Indeos Consultoria S.L.</manufacturer>
+		<manufacturerURL>http://indeos.es</manufacturerURL>
+		<modelDescription>Domoio</modelDescription>
+		<modelName>V1</modelName>
+		<modelNumber>0.1.1</modelNumber>
+		<modelURL>http://domoio.com</modelURL>
+		<modelType>Domoio</modelType>
+		<serialNumber>0001</serialNumber>
+		<UDN>uuid:73796E6F-6473-6D00-0000-0011321a9fb6</UDN>
+		<serviceList>
+			<service>
+				<URLBase>http://10.254.0.16:8081</URLBase>
+				<serviceType>urn:schemas-dummy-com:service:Dummy:1</serviceType>
+				<serviceId>urn:dummy-com:serviceId:dummy1</serviceId>
+				<controlURL>/dummy</controlURL>
+				<eventSubURL>/dummy</eventSubURL>
+				<SCPDURL>/dummy.xml</SCPDURL>
+			</service>
+		</serviceList>
+		<presentationURL>http://10.254.0.16:8081/</presentationURL>
+	</device>
+</root>
