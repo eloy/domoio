@@ -1,7 +1,7 @@
 class DevicesManager
   constructor: ->
     @devices = []
-    DevicesModel = new Model '/api/devices'
+    DevicesModel = app.model 'device'
     DevicesModel.index().done (d) =>
       @devices = d
       window.devices = d
@@ -33,4 +33,4 @@ class DevicesManager
     return false
 
 
-app.devicesManager = new DevicesManager()
+app.DevicesManager = DevicesManager

@@ -1,4 +1,3 @@
-model = Model("/api/devices/:device_id/ports/:id")
 class Form
   constructor: (@ctx) ->
     @port = {}
@@ -6,10 +5,11 @@ class Form
     @digital = false
 
     @device_id = @ctx.params.device_id
+    @model = app.model 'port'
     return unless @device_id
 
     return unless id = @ctx.params.id
-    model.get(device_id: @device_id, id: id).done (data) =>
+    @model.get(device_id: @device_id, id: id).done (data) =>
       @port = data
       # Need to transform some data
       @digital = if @port.digital then "true" else "false"
@@ -22,9 +22,9 @@ class Form
     @port.output = (@output == "true")
 
     if @ctx.params.id
-      promise = model.put device_id: @device_id, id: @port.id, @port
+      promise = @model.put device_id: @device_id, id: @port.id, @port
     else
-      promise = model.post {device_id: @device_id}, @port
+      promise = @model.post {device_id: @device_id}, @port
 
     promise.done (data) =>
       @ctx.app.visit "/admin/devices/#{@device_id}/edit"
