@@ -33,11 +33,20 @@ module.exports = (grunt) ->
         files:
           "web/public/assets/css/domoio_core.css": ["web/less/*.less", "web/less/**/*.less"]
 
+
+    watch:
+      scripts:
+        files: ["web/coffee/**/*.coffee"]
+        tasks: ['build']
+        options:
+          spawn: false
+
   # Load plugins
   grunt.loadNpmTasks "grunt-contrib-coffee"
-  grunt.loadNpmTasks("grunt-contrib-concat");
-  grunt.loadNpmTasks("grunt-contrib-uglify");
-  grunt.loadNpmTasks("grunt-contrib-less");
+  grunt.loadNpmTasks("grunt-contrib-concat")
+  grunt.loadNpmTasks("grunt-contrib-uglify")
+  grunt.loadNpmTasks("grunt-contrib-less")
+  grunt.loadNpmTasks('grunt-contrib-watch')
 
   # Default task(s).
   grunt.registerTask "build", ["coffee", "less", "concat"]
