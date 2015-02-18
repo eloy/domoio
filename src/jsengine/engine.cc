@@ -1,12 +1,11 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
-#include <boost/thread.hpp>
 #include "helpers.h"
 #include "config.h"
 #include "devices.h"
 #include "log.h"
-#include "events.h"
 #include "jsengine.h"
+#include "events.h"
 #include <map>
 
 namespace domoio {
@@ -15,45 +14,6 @@ namespace domoio {
 
 
   namespace js {
-
-    /**
-     * The js engine
-     */
-    class JsProcessor {
-    public:
-      // Creates a new processor that processes requests by invoking the
-      // Process function of the JavaScript script given as an argument.
-
-      JsProcessor(){ }
-      ~JsProcessor();
-
-      bool Initialize();
-
-      void queue_event(EventPtr);
-      bool run();
-    private:
-      void trigger_event(Event*);
-
-      std::deque<EventPtr> queue;
-      boost::condition_variable cond;
-      boost::mutex mutex;
-
-      Isolate* GetIsolate() { return isolate_; }
-
-      Isolate* isolate_;
-      Persistent<Context> context_;
-
-
-      // Execute the script associated with this processor and extract the
-      // Process function.  Returns true if this succeeded, otherwise false.
-      bool ExecuteScript(Handle<String> script);
-
-
-      // Custom
-      // Event triggered for sending messages to user coe
-      Persistent<Function> trigger_event_process;
-    };
-
 
 
     // Convert a JavaScript string to a std::string.  To not bother too
