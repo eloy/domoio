@@ -110,6 +110,7 @@ set(SRC ${SRC}
   ./src/httpd/httpd_action
   ./src/httpd/actions/http_static_content
   ./src/httpd/actions/http_events
+  ./src/httpd/actions/http_console
   ./src/httpd/actions/http_devices
   ./src/httpd/actions/http_ports
   ./src/httpd/actions/http_users

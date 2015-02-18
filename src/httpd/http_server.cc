@@ -20,6 +20,7 @@ namespace domoio {
 
     namespace actions {
       DEF_HTTPD_ACTION(events);
+      DEF_HTTPD_ACTION(console);
       DEF_HTTPD_ACTION(static_content);
       DEF_HTTPD_ACTION(devices);
       DEF_HTTPD_ACTION(ports);
@@ -30,6 +31,7 @@ namespace domoio {
     void register_actions() {
       // Event Source server
       register_action("/api/events", &actions::events);
+      register_action("/api/console/?:id?", &actions::console);
 
       // API
       register_action("/api/devices/?:id?", &actions::devices);
