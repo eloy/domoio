@@ -28,7 +28,7 @@ namespace domoio {
         // Create
         if (request->is_post() && id == 0) {
           Device device;
-          device.from_json(request->post_data_raw.str());
+          device.from_json(request->post_data_raw());
           device.save();
           request->response_data(device.to_json());
           LOG(error) << "Device created";
@@ -39,7 +39,7 @@ namespace domoio {
         if (request->is_put() && id != 0) {
           Device device;
           device.load_from_db(id);
-          device.from_json(request->post_data_raw.str());
+          device.from_json(request->post_data_raw());
           device.save();
           request->response_data(device.to_json());
           LOG(error) << "Device Updated";

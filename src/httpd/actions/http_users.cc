@@ -27,7 +27,7 @@ namespace domoio {
         // Create
         if (request->is_post() && id == 0) {
           User user;
-          user.from_json(request->post_data_raw.str());
+          user.from_json(request->post_data_raw());
           user.save();
           request->response_data(user.to_json());
           LOG(error) << "User created";
@@ -38,7 +38,7 @@ namespace domoio {
         if (request->is_put() && id != 0) {
           User user;
           user.load_from_db(id);
-          user.from_json(request->post_data_raw.str());
+          user.from_json(request->post_data_raw());
           user.save();
           request->response_data(user.to_json());
           LOG(error) << "User Updated";

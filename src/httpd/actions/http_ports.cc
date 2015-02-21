@@ -11,8 +11,6 @@ namespace domoio {
         int device_id = request->param_int("device_id");
         int port_id = request->param_int("id");
 
-        if (!request->post_data_received) return false;
-
         DeviceState *device = DeviceState::find(device_id);
         if (device == NULL) return false;
 
@@ -20,7 +18,14 @@ namespace domoio {
         if (port == NULL) return false;
 
         json::Object doc;
-        json::Reader::Read(doc, request->post_data_raw);
+        std::string post_data = request->post_data_raw();
+
+        if (post_data.length() == 0) return false;
+        std::stringstream ss(post_data);
+
+
+        json::Reader::Read(doc, ss);
+
         if (port->digital()) {
           json::Boolean &v = doc["value"];
           port->set_value(v.Value());
@@ -60,7 +65,7 @@ namespace domoio {
         // Create
         if (request->is_post()) {
           Port *port = new Port();
-          port->from_json(request->post_data_raw.str());
+          port->from_json(request->post_data_raw());
           device.add_port(port);
           device.save();
           request->response_data(port->to_json());
@@ -75,7 +80,7 @@ namespace domoio {
             return false;
           }
 
-          port->from_json(request->post_data_raw.str());
+          port->from_json(request->post_data_raw());
           device.save();
           request->response_data(port->to_json());
           LOG(trace) << "Port created";

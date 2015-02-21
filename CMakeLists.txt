@@ -54,7 +54,13 @@ set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib
 
 # MicroHttpd
 #-----------------------------------------------------------------------
-set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
+# set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
+
+# mongoose
+#-----------------------------------------------------------------------
+include_directories(vendor/mongoose)
+set(SRC ${SRC} vendor/mongoose/mongoose)
+
 
 
 # Add sources
@@ -108,9 +114,9 @@ set(SRC ${SRC}
   ./src/httpd/http_server
   ./src/httpd/request
   ./src/httpd/httpd_action
-  ./src/httpd/actions/http_static_content
+  # ./src/httpd/actions/http_static_content
   ./src/httpd/actions/http_events
-  ./src/httpd/actions/http_console
+  # ./src/httpd/actions/http_console
   ./src/httpd/actions/http_devices
   ./src/httpd/actions/http_ports
   ./src/httpd/actions/http_users
