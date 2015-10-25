@@ -6,7 +6,7 @@
 
 #ifndef DOMOIO_CONFIG_FILE
 // #define DOMOIO_CONFIG_FILE "/etc/domoio/config"
-#define DOMOIO_CONFIG_FILE "config"
+#define DOMOIO_CONFIG_FILE "./config"
 #endif
 
 namespace domoio {

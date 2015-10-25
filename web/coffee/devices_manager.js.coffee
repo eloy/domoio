@@ -1,15 +1,22 @@
 class DevicesManager
   constructor: ->
     @devices = []
-    DevicesModel = new Model '/api/devices'
+    DevicesModel = app.model 'device'
     DevicesModel.index().done (d) =>
       @devices = d
       window.devices = d
 
-    source = new EventSource('/api/events')
-    source.onmessage = (ev) =>
-      data = JSON.parse ev.data
+    ws = new ReconnectingWebSocket("ws://#{location.host}/api/events")
+    ws.onerror = (error) ->
+      console.log "WS ERROR"
+      console.log error
 
+    ws.onopen = () ->
+      console.log "WS Connected"
+
+    ws.onmessage = (ev) =>
+      data = JSON.parse ev.data
+      console.log data
       # Port Set
       if data.type == "port_set"
         d = @device(data.device_id)
@@ -33,4 +40,4 @@ class DevicesManager
     return false
 
 
-app.devicesManager = new DevicesManager()
+app.DevicesManager = DevicesManager

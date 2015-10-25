@@ -1,7 +1,7 @@
 class SiteController
   constructor: (@ctx) ->
     @_devices = []
-    DevicesModel = new Model '/api/devices'
+    DevicesModel = app.model 'device'
     DevicesModel.index().done (selected) =>
       for d in selected
         @_devices.push app.devicesManager.device d.id

@@ -3,7 +3,7 @@ project (domoio)
 
 option(PGSQL_SEARCH_PATH "Aditional paths where search for postgres libs")
 
-# SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set (PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -17,7 +17,7 @@ include_directories(./include ./vendor/include)
 #-----------------------------------------------------------------------
 
 find_package(V8)
-set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES} -lpthread)
+set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES} -lpthread -lstdc++.6)
 
 # ICU
 find_package(ICU)
@@ -46,15 +46,24 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 # BOOST
 #-----------------------------------------------------------------------
 
-include_directories(/Users/harlock/src/c/boost)
-set(DEP_LIBS ${DEP_LIBS} -L/Users/harlock/src/c/boost/stage/lib
+include_directories(/usr/local/include/boost)
+set(DEP_LIBS ${DEP_LIBS}
   -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup
   -lboost_filesystem -lboost_date_time -lboost_regex)
 
 
+set(DEP_LIBS ${DEP_LIBS}
+  -lboost_program_options-mt -lboost_log-mt -lboost_regex-mt)
+
+
 # MicroHttpd
 #-----------------------------------------------------------------------
-set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
+# set(DEP_LIBS ${DEP_LIBS} -lmicrohttpd)
+
+# mongoose
+#-----------------------------------------------------------------------
+include_directories(vendor/mongoose)
+set(SRC ${SRC} vendor/mongoose/mongoose)
 
 
 # Add sources
@@ -108,8 +117,9 @@ set(SRC ${SRC}
   ./src/httpd/http_server
   ./src/httpd/request
   ./src/httpd/httpd_action
-  ./src/httpd/actions/http_static_content
+  # ./src/httpd/actions/http_static_content
   ./src/httpd/actions/http_events
+  # ./src/httpd/actions/http_console
   ./src/httpd/actions/http_devices
   ./src/httpd/actions/http_ports
   ./src/httpd/actions/http_users
@@ -175,8 +185,8 @@ set(TEST_SRC ${TEST_SRC}
 
 
 
-add_executable(test EXCLUDE_FROM_ALL ${TEST_SRC})
-target_link_libraries (test domoio_base ${DEP_LIBS} ${TEST_DEP_LIBS})
+add_executable(tests EXCLUDE_FROM_ALL ${TEST_SRC})
+target_link_libraries (tests domoio_base ${DEP_LIBS} ${TEST_DEP_LIBS})
 
 
 # INSTALL
