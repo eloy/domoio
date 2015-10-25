@@ -88,19 +88,22 @@ namespace domoio {
         if(action == NULL) return MG_FALSE;
 
         Request *request = new Request(conn);
-        WebSocketSession *sess = action->websocket_callback(request);
-        conn->connection_param = sess;
-        // sess->init();
+        conn->connection_param = action->websocket_callback(request);
         return MG_TRUE;
       }
 
       if (ev == MG_CLOSE && conn->is_websocket) {
+        LOG(error) << "Close Event";
         WebSocketSession *action = (WebSocketSession *)conn->connection_param;
         delete(action);
         return MG_TRUE;
       }
 
       if (ev == MG_REQUEST) {
+        if (conn->is_websocket) {
+          return MG_TRUE;
+        }
+
         if (handle_request(conn)) {
           return MG_TRUE;
         }

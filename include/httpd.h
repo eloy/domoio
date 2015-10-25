@@ -1,6 +1,8 @@
 #include "mongoose.h"
 #include <boost/regex.hpp>
 #include "log.h"
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #ifndef HTTPD_H
 #define HTTPD_H
 
@@ -59,7 +61,10 @@ namespace domoio {
 
     class WebSocketSession {
     public:
-      WebSocketSession(Request *_request) : request(_request) {}
+      WebSocketSession(Request *_request) : request(_request)  {
+        boost::thread thread(boost::bind(&WebSocketSession::start, this));
+      }
+
       ~WebSocketSession() {
         this->stop();
         delete(this->request);
@@ -72,6 +77,7 @@ namespace domoio {
 
     private:
       Request *request;
+      void start() { this->init(); }
     };
 
 

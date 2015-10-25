@@ -6,34 +6,33 @@ class DevicesManager
       @devices = d
       window.devices = d
 
-      ws = new WebSocket("ws://localhost:8081/api/events")
-      ws.onerror = (error) ->
-        console.log "WS ERROR"
-        console.log error
+    ws = new ReconnectingWebSocket("ws://#{location.host}/api/events")
+    ws.onerror = (error) ->
+      console.log "WS ERROR"
+      console.log error
 
-      ws.onmessage = (ev) =>
-        console.log ev
+    ws.onopen = () ->
+      console.log "WS Connected"
 
-    # source = new EventSource('/api/events')
-    # source.onmessage = (ev) =>
-    #   data = JSON.parse ev.data
+    ws.onmessage = (ev) =>
+      data = JSON.parse ev.data
+      console.log data
+      # Port Set
+      if data.type == "port_set"
+        d = @device(data.device_id)
+        for p in d.ports when p.id == data.port_id
+          p.value = data.value
+          app.refresh()
 
-    #   # Port Set
-    #   if data.type == "port_set"
-    #     d = @device(data.device_id)
-    #     for p in d.ports when p.id == data.port_id
-    #       p.value = data.value
-    #       app.refresh()
+      else if data.type == "device_connected"
+        console.log "Connected"
+        d = @device(data.device_id)
+        d.connected = true
 
-    #   else if data.type == "device_connected"
-    #     console.log "Connected"
-    #     d = @device(data.device_id)
-    #     d.connected = true
-
-    #   else if data.type == "device_disconnected"
-    #     console.log "Disconnected"
-    #     d = @device(data.device_id)
-    #     d.connected = false
+      else if data.type == "device_disconnected"
+        console.log "Disconnected"
+        d = @device(data.device_id)
+        d.connected = false
 
 
   device: (id) ->
