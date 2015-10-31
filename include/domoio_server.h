@@ -52,7 +52,7 @@ namespace domoio {
 
   private:
     boost::asio::ip::tcp::socket socket;
-    char data[CLIENT_BUFFER_MAX_LENGTH];
+    unsigned char data[CLIENT_BUFFER_MAX_LENGTH];
     std::deque<std::string> message_queue;
 
     DeviceState *device;
@@ -71,6 +71,20 @@ namespace domoio {
     void register_device_signals(void);
     void unregister_device_signals(void);
     void on_device_signal(std::string);
+
+
+
+
+    //
+    unsigned char nounce[40];
+    std::string device_id;
+
+    struct {
+      unsigned char key[16];
+      unsigned char iv[16];
+      int stage = 0;
+      EVP_CIPHER_CTX *ctx;
+    } session;
   };
 
 

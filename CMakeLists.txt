@@ -66,6 +66,14 @@ include_directories(vendor/mongoose)
 set(SRC ${SRC} vendor/mongoose/mongoose)
 
 
+# cantcoap
+#-----------------------------------------------------------------------
+include_directories(vendor/cantcoap)
+set(SRC ${SRC} vendor/cantcoap/cantcoap)
+
+
+
+
 # Add sources
 #-----------------------------------------------------------------------
 
