@@ -10,6 +10,7 @@
 
 #define CLIENT_BUFFER_MAX_LENGTH 1024
 #define SERVER_THREADS 1
+class CoapPDU;
 
 namespace domoio {
   /*
@@ -39,7 +40,7 @@ namespace domoio {
 
     boost::asio::ip::tcp::socket& get_socket(void);
     void start();
-    bool send(std::string);
+
     void read();
     void write();
     bool login(const char *);
@@ -63,8 +64,9 @@ namespace domoio {
     signals_connection device_signals_conn;
 
 
-    bool send_raw(const char*, int);
-    bool send_crypted(const char*, int);
+    bool send_raw(const unsigned char*, int);
+    bool send_crypted(const unsigned char*, int);
+
     void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);
     void process_input(const char*, int);
@@ -72,7 +74,8 @@ namespace domoio {
     void unregister_device_signals(void);
     void on_device_signal(std::string);
 
-
+    int decrypt(unsigned char * plaintext, const unsigned char *ciphertext, const int ciphertext_len);
+    int encrypt(unsigned char * ciphertext, const unsigned char *plaintext, const int plaintext_len);
 
 
     //
@@ -81,10 +84,17 @@ namespace domoio {
 
     struct {
       unsigned char key[16];
-      unsigned char iv[16];
-      int stage = 0;
+      unsigned char iv_encrypt[16];
+      unsigned char iv_decrypt[16];
+      uint32_t last_sent_message_id=1;
+      uint32_t last_received_message_id=1;
       EVP_CIPHER_CTX *ctx;
     } session;
+
+    // Methods
+    void respond_to_hello();
+    void send_ack(CoapPDU*);
+    void send_subscribe(const std::string &channel);
   };
 
 

@@ -10,6 +10,162 @@
 
 namespace domoio {
 
+  std::string print_hex(const unsigned char* buffer, int length) {
+    int dst_length = length * 2 + 1;
+    char dst[dst_length];
+    for(int i=0; i < length; i++) {
+      sprintf(&dst[i*2], "%02X", buffer[i]);
+    }
+    dst[dst_length - 1] = '\0';
+    return std::string(dst, dst_length);
+  }
+
+
+
+  int aes_decrypt(unsigned char * plaintext, const unsigned char *ciphertext, const int ciphertext_len, const unsigned char *key, const unsigned char *iv) {
+    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX_init(&ctx);
+
+    if (!EVP_DecryptInit_ex(&ctx, EVP_aes_128_cbc(), NULL, key, iv)) {
+      LOG(error) << "Error initializing AES for decryption";
+      return 0;
+    }
+
+    // EVP_CIPHER_CTX_set_padding(&ctx, 0);
+
+    int plaintext_len = 0;
+    int bytes_written = 0;
+    if(!EVP_DecryptUpdate(&ctx,
+                          plaintext, &bytes_written,
+                          ciphertext, ciphertext_len)){
+      LOG(error) << "Error decrypt update";
+      return 0;
+    }
+    plaintext_len += bytes_written;
+
+
+    // This function verifies the padding and then discards it.  It will
+    // return an error if the padding isn't what it expects, which means that
+    // the data was malformed or you are decrypting it with the wrong key.
+    if(!EVP_DecryptFinal_ex(&ctx,
+                            plaintext + bytes_written, &bytes_written)){
+      printf("ERROR in EVP_DecryptFinal_ex\n");
+      ERR_print_errors_fp(stderr);
+      return 0;
+    }
+    plaintext_len += bytes_written;
+
+    EVP_CIPHER_CTX_cleanup(&ctx);
+    return plaintext_len;
+  }
+
+
+
+
+  int aes_encrypt(unsigned char * ciphertext, const unsigned char *plaintext, const int plaintext_len, const unsigned char *key, const unsigned char *iv) {
+    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX_init(&ctx);
+
+
+
+    if (!EVP_EncryptInit_ex(&ctx, EVP_aes_128_cbc(), NULL, key, iv)) {
+      LOG(error) << "Error initializing AES for encryption";
+      return 0;
+    }
+
+    // EVP_CIPHER_CTX_set_padding(&ctx, 0);
+
+    int ciphertext_len = 0;
+    int bytes_written = 0;
+    if(!EVP_EncryptUpdate(&ctx,
+                          ciphertext, &bytes_written,
+                          plaintext, plaintext_len)){
+      LOG(error) << "Error enecrypt update";
+      return 0;
+    }
+    ciphertext_len += bytes_written;
+
+
+    // This function verifies the padding and then discards it.  It will
+    // return an error if the padding isn't what it expects, which means that
+    // the data was malformed or you are decrypting it with the wrong key.
+    if(!EVP_EncryptFinal_ex(&ctx,
+                            ciphertext + bytes_written, &bytes_written)){
+      printf("ERROR in EVP_EncryptFinal_ex\n");
+      ERR_print_errors_fp(stderr);
+      return 0;
+    }
+    ciphertext_len += bytes_written;
+
+    EVP_CIPHER_CTX_cleanup(&ctx);
+    return ciphertext_len;
+  }
+
+
+
+  int DeviceConnection::decrypt(unsigned char * plaintext, const unsigned char *ciphertext, const int ciphertext_len) {
+    int length =  aes_decrypt(plaintext, ciphertext, ciphertext_len, &this->session.key[0], &this->session.iv_decrypt[0]);
+
+    // Replace iv_decrypt with the first 16 bytes received
+    memcpy(&this->session.iv_decrypt[0], ciphertext, 16);
+
+    return length;
+  }
+
+
+
+  int DeviceConnection::encrypt(unsigned char * ciphertext, const unsigned char *plaintext, const int plaintext_len) {
+    int length = aes_encrypt(ciphertext, plaintext, plaintext_len, &this->session.key[0], &this->session.iv_encrypt[0]);
+
+    // Replace iv_encrypt with the first 16 bytes encrypted
+    memcpy(&this->session.iv_encrypt[0], ciphertext, 16);
+
+    return length;
+  }
+
+
+
+  void DeviceConnection::respond_to_hello() {
+    LOG(info) << "Responding to HELLO";
+    // Send the hello message
+    CoapPDU pdu;
+    pdu.setMessageID(++session.last_sent_message_id);
+    pdu.setType(CoapPDU::COAP_NON_CONFIRMABLE);
+    pdu.setCode(CoapPDU::COAP_POST);
+    const char* uri = "/h";
+    pdu.setURI(uri, strlen(uri));
+    unsigned char payload[8] = {0, 6, 255, 255, 0, 0, 0, 6};
+    pdu.setPayload(&payload[0], 8);
+    this->send_crypted(pdu.getPDUPointer(), pdu.getPDULength());
+  }
+
+
+
+  void DeviceConnection::send_ack(CoapPDU* recvPDU) {
+    LOG(info) << "Send ACK";
+    // Send the hello message
+    CoapPDU pdu;
+    pdu.setMessageID(++session.last_sent_message_id);
+    pdu.setType(CoapPDU::COAP_ACKNOWLEDGEMENT);
+    pdu.setToken(recvPDU->getTokenPointer(),recvPDU->getTokenLength());
+    this->send_crypted(pdu.getPDUPointer(), pdu.getPDULength());
+  }
+
+  void DeviceConnection::send_subscribe(const std::string &channel) {
+    std::string uri("/e/" + channel);
+    CoapPDU pdu;
+    pdu.setMessageID(++session.last_sent_message_id);
+    pdu.setType(CoapPDU::COAP_CONFIRMABLE);
+    pdu.setCode(CoapPDU::COAP_GET);
+    pdu.setURI(uri.c_str(), uri.length());
+    pdu.printHuman();
+
+    this->send_crypted(pdu.getPDUPointer(), pdu.getPDULength());
+  }
+
+
+
+
   // Constructor
   DeviceConnection::DeviceConnection(boost::asio::io_service& io_service) : socket(io_service) {
     this->device = 0;
@@ -25,9 +181,9 @@ namespace domoio {
       DeviceState::disconnect(this->device->id);
     }
 
-    if (this->block_cipher != 0) {
-      delete this->block_cipher;
-    }
+    // if (this->block_cipher != 0) {
+    //   delete this->block_cipher;
+    // }
 
   }
 
@@ -40,11 +196,7 @@ namespace domoio {
     if (!RAND_bytes(this->nounce, 40)) {
       LOG(error) << "The PRNG is not seeded!";
     }
-    boost::asio::async_write(socket,
-                             boost::asio::buffer(this->nounce, 40),
-                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
-                             );
-
+    this->send_raw(&this->nounce[0], 40);
     this->read();
   }
 
@@ -52,37 +204,40 @@ namespace domoio {
 
   // Read and Write
   //--------------------------------------------------------------------
-  bool DeviceConnection::send(std::string msg) {
-    LOG(trace) << "sending: '"<< msg << "'";
-    if (this->session_started) {
-      return this->send_crypted(msg.c_str(), msg.size());
-    } else {
-      return this->send_raw(msg.c_str(), msg.size());
-    }
+  // bool DeviceConnection::send(std::string msg) {
+  //   LOG(trace) << "sending: '"<< msg << "'";
+  //   if (this->session_started) {
+  //     return this->send_crypted(msg.c_str(), msg.size());
+  //   } else {
+  //     return this->send_raw(msg.c_str(), msg.size());
+  //   }
+  // }
+
+  bool DeviceConnection::send_crypted(const unsigned char* buffer, int length) {
+    unsigned char encrypted_buffer[length + AES_BLOCK_SIZE];
+    int encrypted_length = encrypt(&encrypted_buffer[0], buffer, length);
+
+    unsigned char kk[encrypted_length + 2];
+
+    kk[0] = (encrypted_length >> 8) & 0xff;
+    kk[1] = encrypted_length & 0xff;
+
+    memcpy(&kk[2], &encrypted_buffer[0], encrypted_length );
+    return this->send_raw(&kk[0], encrypted_length + 2);
   }
 
-  bool DeviceConnection::send_crypted(const char* str, int length) {
-    // unsigned char * enc = this->block_cipher->encrypt(str, &length);
-    // char *hex = domoio::crypto::hex_encode(enc, &length);
-    // this->send_raw(hex, length);
-    // free(enc);
-    // free(hex);
+  bool DeviceConnection::send_raw(const unsigned char* buffer, int length) {
+    // bool write_in_progress = !this->message_queue.empty();
+    // this->message_queue.push_back(std::string(msg, length));
+    // if (!write_in_progress) {
+    //   this->write();
+    // }
     // return true;
 
-    // DISABLE ENCRYPTATION
-    char *hex = domoio::crypto::hex_encode((unsigned char*)str, &length);
-    this->send_raw(hex, length);
-    free(hex);
-    return true;
-  }
-
-  bool DeviceConnection::send_raw(const char* msg, int length) {
-
-    bool write_in_progress = !this->message_queue.empty();
-    this->message_queue.push_back(std::string(msg, length));
-    if (!write_in_progress) {
-      this->write();
-    }
+    // LOG(info) << "**** Sending " << length<< " bytes to the core";
+    boost::asio::async_write(socket, boost::asio::buffer(buffer, length),
+                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
+                             );
     return true;
   }
 
@@ -98,13 +253,13 @@ namespace domoio {
   }
 
   void DeviceConnection::write() {
-    std::stringstream stream;
-    stream << this->message_queue.front().data() << "\n";
-    int length = this->message_queue.front().length() + 1;
-    boost::asio::async_write(socket,
-                             boost::asio::buffer(stream.str(), length),
-                             boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
-                             );
+    // std::stringstream stream;
+    // stream << this->message_queue.front().data() << "\n";
+    // int length = this->message_queue.front().length() + 1;
+    // boost::asio::async_write(socket,
+    //                          boost::asio::buffer(stream.str(), length),
+    //                          boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
+    //                          );
 
   }
 
@@ -122,55 +277,7 @@ namespace domoio {
   // Connection Callbacks
   //--------------------------------------------------------------------
 
-  std::string print_hex(const unsigned char* buffer, int length) {
-    int dst_length = length * 2 + 1;
-    char dst[dst_length];
-    for(int i=0; i < length; i++) {
-      sprintf(&dst[i*2], "%02X", buffer[i]);
-    }
-    dst[dst_length - 1] = '\0';
-    return std::string(dst, dst_length);
-  }
 
-  int decrypt(unsigned char * plaintext, unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv) {
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
-
-
-
-    if (!EVP_DecryptInit_ex(&ctx, EVP_aes_128_cbc(), NULL, key, iv)) {
-      LOG(error) << "Error initializing AES for decryption";
-      return 0;
-    }
-
-    EVP_CIPHER_CTX_set_padding(&ctx, 0);
-
-    int plaintext_len = 0;
-    int bytes_written = 0;
-    if(!EVP_DecryptUpdate(&ctx,
-                          plaintext, &bytes_written,
-                          ciphertext, ciphertext_len)){
-      LOG(error) << "Error decrypt update";
-      return 0;
-    }
-    plaintext_len += bytes_written;
-    LOG(info) << "length after update: " << plaintext_len;
-
-    // This function verifies the padding and then discards it.  It will
-    // return an error if the padding isn't what it expects, which means that
-    // the data was malformed or you are decrypting it with the wrong key.
-    if(!EVP_DecryptFinal_ex(&ctx,
-                            plaintext + bytes_written, &bytes_written)){
-      printf("ERROR in EVP_DecryptFinal_ex\n");
-      ERR_print_errors_fp(stderr);
-      // return 0;
-    }
-    plaintext_len += bytes_written;
-
-    LOG(info) << "Decrypted message: " << print_hex(&plaintext[0], plaintext_len);
-    EVP_CIPHER_CTX_cleanup(&ctx);
-    return plaintext_len;
-  }
 
 
   void DeviceConnection::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
@@ -183,135 +290,137 @@ namespace domoio {
     LOG(info) << "Readed: " << print_hex(&data[0], bytes_transferred) << "bytes_transferred: " << bytes_transferred;
 
     if (logged_in) {
-    } else {
-      if (session.stage == 0) {
-        RSA *rsa_prikey = NULL;
-        const char *PRIVFILE = "/Users/harlock/src/js/spark-server/default_key.pem";
-        FILE *rsa_privkey_file = fopen(PRIVFILE,"rb");
-        if (PEM_read_RSAPrivateKey(rsa_privkey_file, &rsa_prikey, NULL, NULL) == NULL) {
-          LOG(error) << "HORROR!!! loading server RSA Private Key File";
-        } //key read
-        fclose(rsa_privkey_file);
+      uint16_t dataBoth = 0x0000;
 
-        char decrypt[256];
-        int size = RSA_private_decrypt(256, (unsigned char*)&this->data[0], (unsigned char*)&decrypt[0],rsa_prikey , RSA_PKCS1_PADDING);
-        LOG(info) << "Size:" << size;
-        if (size == -1) {
-          LOG(error) << "invalid message";
-          return;
-        }
-
-        if (memcmp(&decrypt[0], &this->nounce[0], 40) != 0) {
-          LOG(error) << "Bad nounce";
-        }
-
-        // Extract the device ID
-        char id_value[25]; // 24 + /0
-        for(int i=0; i < 12; i++) {
-          sprintf(&id_value[i * 2], "%02x", decrypt[40 + i]);
-        }
-        this->device_id = id_value;
-        LOG(info) << "ID: " << this->device_id;
+      dataBoth = data[0];
+      dataBoth = dataBoth << 8;
+      dataBoth |= data[1];
 
 
-        // create the session
-        RSA *rsa_device_key = NULL;
-        const char *device_file = "/Users/harlock/src/js/spark-server/450033001147343339383037_new.pub.pem";
-        FILE *rsa_device_file = fopen(device_file,"rb");
-        if (PEM_read_RSA_PUBKEY(rsa_device_file, &rsa_device_key, NULL, NULL) == NULL) {
-          LOG(error) << "HORROR!!! loading RSA Public Key File: ";
-        } //key read
-        fclose(rsa_device_file);
+      unsigned char plaintext[bytes_transferred + 128];
+      int plaintext_len = decrypt(&plaintext[0], &data[2], dataBoth);
+
+      if(plaintext_len > 0) {
+        CoapPDU *recvPDU = new CoapPDU(&plaintext[0], plaintext_len);
+
+        if(recvPDU->validate()) {
+
+          // Respond to empty confirmable messages
+          if(recvPDU->getCode() == CoapPDU::COAP_EMPTY && recvPDU->getType() == CoapPDU::COAP_CONFIRMABLE) {
+            this->send_ack(recvPDU);
+          }
+
+          char uri_buffer[25];
+          int uri_length;
+          recvPDU->getURI(uri_buffer,25,&uri_length);
+          std::string uri(uri_buffer, uri_length);
 
 
-        unsigned char components[40];
-        unsigned char encrypted[128];
-        if (!RAND_bytes(components, 40)) {
-          LOG(error) << "The PRNG is not seeded!";
-        }
-
-        // Copy components
-        memcpy(&this->session.key[0], &components[0], 16);
-        memcpy(&this->session.iv[0], &components[0] + 16, 16);
-
-        LOG(info) << "KEY: " << print_hex(&session.key[0], 16);
-        LOG(info) << "IV: " << print_hex(&session.iv[0], 16);
-
-        size = RSA_public_encrypt(40, &components[0], &encrypted[0],rsa_device_key , RSA_PKCS1_PADDING);
-        if (size == -1) {
-          LOG(error) << "Error ecrypting components";
-          return;
-        }
-        LOG(info) << "Components encrypted. Size: " << size;
-
-        unsigned char hmac_signature[EVP_MAX_MD_SIZE];
-        unsigned int hmac_signature_len;
-        HMAC(EVP_sha1(), &components[0], 40,
-             &encrypted[0], size,
-             &hmac_signature[0], &hmac_signature_len);
-
-        LOG(info) << "HMAC signagure length: " << hmac_signature_len;
-        unsigned char encrypted_signature[256];
-
-        size = RSA_private_encrypt(hmac_signature_len, &hmac_signature[0], &encrypted_signature[0],rsa_prikey , RSA_PKCS1_PADDING);
-        if (size == -1) {
-          LOG(error) << "Error ecrypting signature";
-          return;
-        }
-        LOG(info) << "Signature encrypted. Size: " << size;
-
-
-        unsigned char session_buffer[384];
-        memcpy(&session_buffer[0], &encrypted[0], 128);
-        memcpy(&session_buffer[128], &encrypted_signature[0], 256);
-
-        boost::asio::async_write(socket,
-                                 boost::asio::buffer(session_buffer, 384),
-                                 boost::bind(&DeviceConnection::handle_write, this, boost::asio::placeholders::error)
-                                 );
-
-        /* Initialise the library */
-        ERR_load_crypto_strings();
-        OpenSSL_add_all_algorithms();
-        OPENSSL_config(NULL);
-
-
-
-
-
-        // /* Initialise the encryption operation. IMPORTANT - ensure you use a key
-        //  * and IV size appropriate for your cipher
-        //  * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-        //  * IV size for *most* modes is the same as the block size. For AES this
-        //  * is 128 bits */
-        // if(1 != EVP_EncryptInit_ex(session.ctx, EVP_aes_128_cbc(), NULL, session.key, session.iv)) {
-        //   LOG(error) << "Error initializing AES";
-        // }
-
-
-
-        session.stage++;
-
-      }
-
-      else if (session.stage == 1) {
-        LOG(info) << "Handsake response:" << bytes_transferred;
-
-        unsigned char plaintext[bytes_transferred + 128];
-        int plaintext_len = decrypt(&plaintext[0], &data[0] + 2, bytes_transferred - 2, &this->session.key[0], &this->session.iv[0]);
-
-        if(plaintext_len > 0) {
-          CoapPDU *recvPDU = new CoapPDU((uint8_t*) &plaintext[0], plaintext_len);
-          if(recvPDU->validate()) {
-            LOG(info) << "!!!!!!!!!!!!!!!!!!!           Valid message !!!!!!!!!!!!!!!!!!!!!!!!";
-            // recvPDU->getURI(uriBuffer,URI_BUF_LEN,&recvURILen);
+          if (uri == "/h") {
+            this->respond_to_hello();
+            this->send_subscribe("domoio");
+          }
+          else {
+            LOG(warning) << "Uknown package:";
             recvPDU->printHuman();
           }
 
+        } else {
+          LOG(error) << "Invalid package: " << print_hex(&plaintext[0], plaintext_len);
         }
-
       }
+
+
+    } else {
+
+      RSA *rsa_prikey = NULL;
+      const char *PRIVFILE = "/Users/harlock/src/js/spark-server/default_key.pem";
+      FILE *rsa_privkey_file = fopen(PRIVFILE,"rb");
+      if (PEM_read_RSAPrivateKey(rsa_privkey_file, &rsa_prikey, NULL, NULL) == NULL) {
+        LOG(error) << "HORROR!!! loading server RSA Private Key File";
+      } //key read
+      fclose(rsa_privkey_file);
+
+      char decrypt[256];
+      int size = RSA_private_decrypt(256, (unsigned char*)&this->data[0], (unsigned char*)&decrypt[0],rsa_prikey , RSA_PKCS1_PADDING);
+      LOG(info) << "Size:" << size;
+      if (size == -1) {
+        LOG(error) << "invalid message";
+        return;
+      }
+
+      if (memcmp(&decrypt[0], &this->nounce[0], 40) != 0) {
+        LOG(error) << "Bad nounce";
+      }
+
+      // Extract the device ID
+      char id_value[25]; // 24 + /0
+      for(int i=0; i < 12; i++) {
+        sprintf(&id_value[i * 2], "%02x", decrypt[40 + i]);
+      }
+      this->device_id = id_value;
+      LOG(info) << "Device connected. ID: " << this->device_id;
+
+
+      // create the session
+      RSA *rsa_device_key = NULL;
+      const char *device_file = "/Users/harlock/src/js/spark-server/450033001147343339383037_new.pub.pem";
+      FILE *rsa_device_file = fopen(device_file,"rb");
+      if (PEM_read_RSA_PUBKEY(rsa_device_file, &rsa_device_key, NULL, NULL) == NULL) {
+        LOG(error) << "HORROR!!! loading RSA Public Key File: ";
+      } //key read
+      fclose(rsa_device_file);
+
+
+      unsigned char components[40];
+      unsigned char encrypted[128];
+      if (!RAND_bytes(components, 40)) {
+        LOG(error) << "The PRNG is not seeded!";
+      }
+
+      // Copy components
+      memcpy(&this->session.key[0], &components[0], 16);
+      memcpy(&this->session.iv_encrypt[0], &components[0] + 16, 16);
+      memcpy(&this->session.iv_decrypt[0], &components[0] + 16, 16);
+
+      size = RSA_public_encrypt(40, &components[0], &encrypted[0],rsa_device_key , RSA_PKCS1_PADDING);
+      if (size == -1) {
+        LOG(error) << "Error ecrypting components";
+        return;
+      }
+
+
+      unsigned char hmac_signature[EVP_MAX_MD_SIZE];
+      unsigned int hmac_signature_len;
+      HMAC(EVP_sha1(), &components[0], 40,
+           &encrypted[0], size,
+           &hmac_signature[0], &hmac_signature_len);
+
+
+      unsigned char encrypted_signature[256];
+
+      size = RSA_private_encrypt(hmac_signature_len, &hmac_signature[0], &encrypted_signature[0],rsa_prikey , RSA_PKCS1_PADDING);
+      if (size == -1) {
+        LOG(error) << "Error ecrypting signature";
+        return;
+      }
+
+      unsigned char session_buffer[384];
+      memcpy(&session_buffer[0], &encrypted[0], 128);
+      memcpy(&session_buffer[128], &encrypted_signature[0], 256);
+
+      this->send_raw(session_buffer, 384);
+
+      /* Initialise the library */
+      ERR_load_crypto_strings();
+      OpenSSL_add_all_algorithms();
+      OPENSSL_config(NULL);
+
+
+      this->logged_in = true;
     }
+
+
     // this->process_input(&this->data[0], bytes_transferred);
     this->read();
   }
@@ -320,7 +429,7 @@ namespace domoio {
 
   void DeviceConnection::handle_write(const boost::system::error_code& error) {
     if (error) { return ; }
-    LOG(info) << "handle_write";
+    // LOG(info) << "handle_write";
     // this->message_queue.pop_front();
     // if (!this->message_queue.empty()) {
     //   this->write();
@@ -331,38 +440,38 @@ namespace domoio {
   //--------------------------------------------------------------------
 
   void DeviceConnection::process_input(const char* input_data, int bytes_transferred) {
-    // If session not started, dispatch clean data
-    if (!this->session_started) {
-      this->dispatch_request(input_data);
-      return;
-    }
+    // // If session not started, dispatch clean data
+    // if (!this->session_started) {
+    //   this->dispatch_request(input_data);
+    //   return;
+    // }
 
-    // Decrypt if session started
-    try {
-      // int len = bytes_transferred - 1;
-      // unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
-      // char * clean = this->block_cipher->decrypt(crypted, &len);
+    // // Decrypt if session started
+    // try {
+    //   // int len = bytes_transferred - 1;
+    //   // unsigned char *crypted = domoio::crypto::hex_decode(input_data, &len);
+    //   // char * clean = this->block_cipher->decrypt(crypted, &len);
 
-      // std::string str(clean, len);
-      // this->dispatch_request(str);
-      // free(crypted);
-      // free(clean);
+    //   // std::string str(clean, len);
+    //   // this->dispatch_request(str);
+    //   // free(crypted);
+    //   // free(clean);
 
-      // DISABLE ENCRYPTATION
-      int len = bytes_transferred - 1;
-      unsigned char *clean = domoio::crypto::hex_decode(input_data, &len);
+    //   // DISABLE ENCRYPTATION
+    //   int len = bytes_transferred - 1;
+    //   unsigned char *clean = domoio::crypto::hex_decode(input_data, &len);
 
-      std::string str((char*)clean, len);
-      this->dispatch_request(str);
-      free(clean);
+    //   std::string str((char*)clean, len);
+    //   this->dispatch_request(str);
+    //   free(clean);
 
-    }
-    catch (std::exception& e) {
-      LOG(trace) << "Error decoding input: " << e.what() << "\n";
-      this->session_started = false;
-      this->send("400 Bad Request");
-      this->close();
-    }
+    // }
+    // catch (std::exception& e) {
+    //   LOG(trace) << "Error decoding input: " << e.what() << "\n";
+    //   this->session_started = false;
+    //   this->send("400 Bad Request");
+    //   this->close();
+    // }
 
   }
 
