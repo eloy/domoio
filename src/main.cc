@@ -17,6 +17,7 @@ static bool EnableCoreDumps(void) {
 
 
 void exit_callback(int s) {
+  LOG(info) << "Closing domoio server";
   domoio::exit_domoio();
   exit(1);
 }

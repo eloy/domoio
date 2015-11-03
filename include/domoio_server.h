@@ -43,8 +43,7 @@ namespace domoio {
 
     void read();
     void write();
-    bool login(const char *);
-    bool is_logged_in();
+
     bool is_session_started();
     bool close();
     bool create_session(int);
@@ -57,9 +56,8 @@ namespace domoio {
     std::deque<std::string> message_queue;
 
     DeviceState *device;
-    domoio::crypto::BlockCipher *block_cipher;
+
     bool session_started;
-    bool logged_in;
     bool disconnected;
     signals_connection device_signals_conn;
 
@@ -69,7 +67,7 @@ namespace domoio {
 
     void handle_read(const boost::system::error_code&, size_t );
     void handle_write(const boost::system::error_code&);
-    void process_input(const char*, int);
+
     void register_device_signals(void);
     void unregister_device_signals(void);
     void on_device_signal(std::string);
@@ -82,13 +80,14 @@ namespace domoio {
     unsigned char nounce[40];
     std::string device_id;
 
+    bool respond_to_handsake(const unsigned char *receiced_data, int received_length);
+    bool process_input(const unsigned char *receiced_data, int received_length);
     struct {
       unsigned char key[16];
       unsigned char iv_encrypt[16];
       unsigned char iv_decrypt[16];
       uint32_t last_sent_message_id=1;
       uint32_t last_received_message_id=1;
-      EVP_CIPHER_CTX *ctx;
     } session;
 
     // Methods

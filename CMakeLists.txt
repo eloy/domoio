@@ -84,14 +84,11 @@ set(SRC ${SRC}
   ./src/server_run
   ./src/connection
   ./src/device_connection
-  ./src/ssdp.cc
+  ./src/crypt
   ./src/events
   ./src/database
   ./src/helpers
-  ./src/crypto/crypto
-  ./src/crypto/block_cipher
-  ./src/crypto/aes
-)
+
 
 # Models
 set(SRC ${SRC}
