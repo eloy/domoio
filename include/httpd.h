@@ -70,7 +70,7 @@ namespace domoio {
         delete(this->request);
       }
 
-      virtual void init() {LOG(error) << "BAD_METHOD"; }
+      virtual void init() {LOG(error) << "BAD_METHOD:" << request->url << " [" << request->method << "]"; }
       virtual void stop() {}
       virtual void handle_data(std::string data) {}
       void send(std::string data) { request->send_ws(data); }

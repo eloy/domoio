@@ -16,12 +16,17 @@ include_directories(./include ./vendor/include)
 # V8
 #-----------------------------------------------------------------------
 
-find_package(V8)
-set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES} -lpthread -lstdc++.6)
-
 # ICU
 find_package(ICU)
 set(DEP_LIBS ${DEP_LIBS} ${ICU_LIBRARIES})
+
+find_package(V8)
+set(DEP_LIBS ${DEP_LIBS} ${V8_LIBRARIES} -lpthread)
+
+
+if(APPLE)
+  set(DEP_LIBS ${DEP_LIBS} -lstdc++.6)
+endif(APPLE)
 
 # Postgres
 #-----------------------------------------------------------------------
@@ -51,10 +56,10 @@ set(DEP_LIBS ${DEP_LIBS}
   -lboost_system -lboost_thread -lboost_program_options -lboost_log -lboost_log_setup
   -lboost_filesystem -lboost_date_time -lboost_regex)
 
-
-set(DEP_LIBS ${DEP_LIBS}
-  -lboost_program_options-mt -lboost_log-mt -lboost_regex-mt)
-
+if(APPLE)
+  set(DEP_LIBS ${DEP_LIBS}
+    -lboost_program_options-mt -lboost_log-mt -lboost_regex-mt)
+endif(APPLE)
 
 # MicroHttpd
 #-----------------------------------------------------------------------
@@ -88,7 +93,7 @@ set(SRC ${SRC}
   ./src/events
   ./src/database
   ./src/helpers
-
+  )
 
 # Models
 set(SRC ${SRC}

@@ -15,8 +15,8 @@ class Form
   layout: 'admin'
   constructor: (@ctx) ->
     @device = {specifications: {} }
-    return unless @ctx.params.id
     @model = app.model 'device'
+    return unless @ctx.params.id
     @model.get(id: @ctx.params.id).done (data) =>
       @device = data
       @ctx.app.refresh()

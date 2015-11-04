@@ -16,6 +16,7 @@
 namespace domoio {
   namespace crypto {
     void init(void);
+    void exit(void);
 
     /* unsigned char *random(unsigned char* , size_t); */
     int aes_encrypt(unsigned char * ciphertext, const unsigned char *plaintext, const int plaintext_len, const unsigned char *key, const unsigned char *iv);

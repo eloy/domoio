@@ -16,12 +16,19 @@ namespace domoio {
       // Load the RSA private cert
       const char *PRIVFILE = "/Users/harlock/src/js/spark-server/default_key.pem";
       FILE *rsa_privkey_file = fopen(PRIVFILE,"rb");
+      if (rsa_privkey_file == NULL) {
+        LOG(error) << "RSA Private key file not found:" << PRIVFILE;
+        return;
+      }
       if (PEM_read_RSAPrivateKey(rsa_privkey_file, &rsa_prikey, NULL, NULL) == NULL) {
         LOG(error) << "HORROR!!! loading server RSA Private Key File";
       } //key read
       fclose(rsa_privkey_file);
     }
 
+    void exit() {
+      ERR_free_strings();
+    }
 
     int rsa_decrypt(unsigned char *plaintext, const unsigned char * ciphertext, int length) {
       return RSA_private_decrypt(length, ciphertext, plaintext, rsa_prikey , RSA_PKCS1_PADDING);

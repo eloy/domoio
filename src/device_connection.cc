@@ -94,10 +94,6 @@ namespace domoio {
       DeviceState::disconnect(this->device->id);
     }
 
-    // if (this->block_cipher != 0) {
-    //   delete this->block_cipher;
-    // }
-
   }
 
   boost::asio::ip::tcp::socket& DeviceConnection::get_socket(void) {
@@ -193,7 +189,7 @@ namespace domoio {
 
   bool DeviceConnection::respond_to_handsake(const unsigned char *received_data, int received_length) {
     unsigned char decrypt[256];
-    int size = crypto::rsa_decrypt(&decrypt[0], received_data, 256);
+    int size = crypto::rsa_decrypt(&decrypt[0], received_data, received_length);
     if (size == -1) {
       LOG(error) << "invalid message";
       return false;
@@ -277,15 +273,13 @@ namespace domoio {
     LOG(info) << "Readed: " << print_hex(&data[0], bytes_transferred) << "bytes_transferred: " << bytes_transferred;
 
     if (session_started) {
-      process_input(&data[0], bytes_transferred);
+      uint16_t dataBoth = 0x0000;
 
+      dataBoth = data[0];
+      dataBoth = dataBoth << 8;
+      dataBoth |= data[1];
 
-      // uint16_t dataBoth = 0x0000;
-
-      // dataBoth = data[0];
-      // dataBoth = dataBoth << 8;
-      // dataBoth |= data[1];
-
+      process_input(&data[2], dataBoth);
 
       // unsigned char plaintext[bytes_transferred + 128];
       // int plaintext_len = decrypt(&plaintext[0], &data[2], dataBoth);
@@ -350,15 +344,9 @@ namespace domoio {
   //--------------------------------------------------------------------
 
   bool DeviceConnection::process_input(const unsigned char *received_data, int received_length) {
-    uint16_t dataBoth = 0x0000;
-
-    dataBoth = received_data[0];
-    dataBoth = dataBoth << 8;
-    dataBoth |= received_data[1];
-
 
     unsigned char plaintext[received_length + 128];
-    int plaintext_len = decrypt(&plaintext[0], received_data + 2, dataBoth);
+    int plaintext_len = decrypt(&plaintext[0], received_data, received_length);
 
     if(plaintext_len > 0) {
       CoapPDU recvPDU(&plaintext[0], plaintext_len);

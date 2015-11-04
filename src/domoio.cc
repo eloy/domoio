@@ -20,6 +20,7 @@ namespace domoio {
 
 
   void exit_domoio(void) {
+    domoio::crypto::exit();
     domoio::unregister_device_commands();
     domoio::events::stop();
     domoio::DeviceState::unload_devices();

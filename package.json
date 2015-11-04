@@ -20,7 +20,7 @@
     "grunt-contrib-less": "~1.0.0",
     "grunt-contrib-watch": "~0.6.1"
   },
-  "repositories": [
+  "repository": [
     {
       "type": "git",
       "url": "https://github.com/harlock/domoio.git"
