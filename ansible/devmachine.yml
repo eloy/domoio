@@ -10,18 +10,25 @@
     apt: name=build-essential state=present
   - name: Install Git
     apt: name=git-core state=present
-  - name: Install SVN
-    apt: name=subversion state=present
   - name: Install cmake
     apt: name=cmake state=present
   - name: Install cmake Data
     apt: name=cmake-data state=present
+  - name: Install Ruby
+    apt: name=ruby state=present
+  - name: Install Ruby Dev
+    apt: name=ruby-dev state=present
+
+  - name: Install Gem
+    apt: name=gem state=present
 
     # Domoio Libs
   - name: Postgres
     apt: name=postgresql state=present
     # Domoio development libs
   - name: Postgres dev
+    apt: name=postgresql-server-dev-all state=present
+  - name: Postgres PQ dev
     apt: name=libpq-dev state=present
   - name: Boost
     apt: name=libboost-all-dev state=present
@@ -37,7 +44,7 @@
   - git: repo=https://chromium.googlesource.com/v8/v8.git
        dest=/var/local/src/v8-3.25
        version=3.27.24
-  - shell: make dependencies && make x64.release
+  - shell: make dependencies && make release -j 16 i18nsupport=off
     args:
       chdir: /var/local/src/v8-3.25
       creates: out/x64.release/obj.target/tools/gyp/libv8_base.a
@@ -45,7 +52,7 @@
     args:
       chdir: /var/local/src/v8-3.25
       creates: /usr/local/include/v8.h
-  - shell: cp tools/gyp/lib*.a /usr/local/lib && cp third_party/icu/libicu*.a /usr/local/lib
+  - shell: cp tools/gyp/lib*.a /usr/local/lib #&& cp third_party/icu/libicu*.a /usr/local/lib
     args:
       chdir: /var/local/src/v8-3.25/out/x64.release/obj.target
       creates: /usr/local/lib/libv8_base.a

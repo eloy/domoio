@@ -3,7 +3,7 @@
    : ansible-playbook ansible/devmachine.yml --ask-sudo-pass
 ** Build domoio
    #+BEGIN_SRC sh
-     git clone git@github.com:harlock/domoio.git
+     git clone git@github.com:eloy/domoio.git
      cd domoio
      mkdir build
      cd build
