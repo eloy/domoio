@@ -84,9 +84,10 @@ namespace domoio {
     static const char* table_name(void) { return "devices"; }
   Device() : vault::Model<Device>() {
       this->add_field("label", vault::string, &this->label);
-      this->add_field("password", vault::string, &this->password, (vault::DB | vault::FROM_JSON));
+      this->add_field("hardware_id", vault::string, &this->hardware_id);
       this->add_field("specifications", vault::text, &this->specifications_raw, vault::DB);
       this->add_field("config", vault::text, &this->config_raw, (vault::DB | vault::FROM_JSON));
+      this->add_field("public_key", vault::text, &this->public_key);
       this->add_field("type", vault::string, &this->type);
     }
 
@@ -97,8 +98,9 @@ namespace domoio {
     void add_port(Port *);
 
     std::string label;
-    std::string password;
+    std::string hardware_id;
     std::string specifications_raw;
+    std::string public_key;
 
     bool is_virtual() { return this->type == "VirtualDevice"; }
 
